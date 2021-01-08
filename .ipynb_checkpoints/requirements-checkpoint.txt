@@ -1,7 +1,0 @@
-jupyterlab==2.2.9
-ipykernel==5.3.4
-tqdm==4.48.2
-beautifulsoup4==4.9.1
-pandas==1.2.0
-torch==1.7.1
-nltk

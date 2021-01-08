@@ -1,1 +1,5 @@
 data
+chromedriver
+tensorboard
+.idea
+.ipynb_checkpoints
