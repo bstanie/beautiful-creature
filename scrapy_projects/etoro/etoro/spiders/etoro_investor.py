@@ -4,7 +4,7 @@ import re
 import scrapy
 
 
-N_TOP_INVESTORS = 100
+N_TOP_INVESTORS = 500
 
 
 class EtoroInvestorSpider(scrapy.Spider):
