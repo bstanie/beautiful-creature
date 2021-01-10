@@ -1,5 +1,4 @@
 data
-scraper/etoro/chromedriver
 tensorboard
 .idea
 .ipynb_checkpoints
