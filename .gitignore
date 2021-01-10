@@ -3,4 +3,4 @@ scraper/etoro/chromedriver
 tensorboard
 .idea
 .ipynb_checkpoints
-/scraper/etoro/etoro/output.json
+.json
