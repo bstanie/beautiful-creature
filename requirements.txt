@@ -5,8 +5,10 @@ beautifulsoup4==4.9.1
 pandas==1.2.0
 torch==1.7.1
 scikit-learn==0.24.0
-tensorboard
-matplotlib
-seaborn
-scrapy
-selenium
+tensorboard==2.4.0
+matplotlib==3.3.3
+seaborn==0.11.1
+scrapy==1.7.2
+scrapyjs==0.2
+selenium==3.141.0
+guppy==0.1.10
