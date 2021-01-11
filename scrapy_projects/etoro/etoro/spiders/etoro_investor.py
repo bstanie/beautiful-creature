@@ -6,7 +6,6 @@ from datetime import datetime
 import scrapy
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
-from scrapy_projects.etoro.etoro.settings import GECKODRIVER_PATH, CHROMEDRIVER_PATH
 
 
 class EtoroInvestorSpider(scrapy.Spider):
@@ -63,8 +62,9 @@ class EtoroInvestorSpider(scrapy.Spider):
         profile.set_preference("dom.webdriver.enabled", False)
         profile.set_preference('useAutomationExtension', False)
         profile.update_preferences()
-        self.driver = webdriver.Firefox(executable_path=GECKODRIVER_PATH,
-                                        firefox_options=opts, firefox_profile=profile)
+        self.driver = webdriver.Firefox(
+            executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "geckodriver"),
+            firefox_options=opts, firefox_profile=profile)
 
         self.driver.get(response.url)
         portfolio = {}

@@ -3,10 +3,8 @@ import os
 import re
 from time import sleep
 
-import requests
 import scrapy
 from selenium import webdriver
-from ..settings import CHROMEDRIVER_PATH
 
 
 class EtoroDashboardSpider(scrapy.Spider):
@@ -34,7 +32,6 @@ class EtoroDashboardSpider(scrapy.Spider):
         f'https://www.etoro.com/',
     )
 
-
     def start_requests(self):
         for url in self.start_urls:
             yield scrapy.Request(url, self.parse)
@@ -48,8 +45,9 @@ class EtoroDashboardSpider(scrapy.Spider):
             " (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10166")
 
         desired_capabilities = options.to_capabilities()
-        driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH,
-                                  desired_capabilities=desired_capabilities)
+        driver = webdriver.Chrome(
+            executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "chromedriver"),
+            desired_capabilities=desired_capabilities)
         objs = list()
         for page in range(1, 99):
             print(f"Scraping page {page}")
@@ -63,5 +61,5 @@ class EtoroDashboardSpider(scrapy.Spider):
                 break
             objs.extend(obj)
 
-        with open("investor_dashboard.json","w") as f:
+        with open("investor_dashboard.json", "w") as f:
             json.dump(objs, f)

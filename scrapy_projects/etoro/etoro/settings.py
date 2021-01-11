@@ -100,6 +100,5 @@ ROBOTSTXT_OBEY = False
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
-CHROMEDRIVER_PATH = "../chromedriver"
-GECKODRIVER_PATH = "../geckodriver"
+
 
