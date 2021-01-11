@@ -17,16 +17,5 @@ instrument_mapping = json.loads(requests.get(
 with open("symbol_mapping.json", "w") as f:
     json.dump(instrument_mapping, f)
 
-# runner = CrawlerRunner()
-#
-# @defer.inlineCallbacks
-# def crawl():
-#     yield runner.crawl(EtoroDashboardSpider)
-#     yield runner.crawl(EtoroInvestorSpider)
-#     reactor.stop()
-#
-# crawl()
-# reactor.run()
-
 # cmdline.execute("scrapy crawl etoro_dashboard".split())
 cmdline.execute("scrapy crawl etoro_investor".split())

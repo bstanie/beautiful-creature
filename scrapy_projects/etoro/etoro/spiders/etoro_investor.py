@@ -5,8 +5,7 @@ import scrapy
 
 
 class EtoroInvestorSpider(scrapy.Spider):
-
-    N_TOP_INVESTORS = 100
+    N_TOP_INVESTORS = 2000
 
     name = "etoro_investor"
     allowed_domains = ["etoro.com"]
@@ -36,7 +35,10 @@ class EtoroInvestorSpider(scrapy.Spider):
 
         start_urls = ["https://www.etoro.com/sapi/trade-data-real/live/public/portfolios?cid=" + str(inv_id) for inv_id
                       in dashboard_investor_ids if inv_id not in scraped_investor_ids]
-        for url in start_urls:
+        for idx, url in enumerate(start_urls):
+            if idx % 10 == 0:
+                print(f"Tried {idx} of {len(start_urls)} items")
+                print(f"Scraped items: {len(self.investor_portfolio)}")
             yield scrapy.Request(url, self.parse)
 
     def parse(self, response, **kwargs):
