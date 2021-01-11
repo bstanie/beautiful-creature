@@ -2,5 +2,6 @@ data
 tensorboard
 .idea
 notebooks/.ipynb_checkpoints
+../.ipynb_checkpoints/
 .json
 **/*.log
