@@ -17,7 +17,6 @@ cryptography==3.3.1
 cssselect==1.1.0
 cycler==0.10.0
 decorator==4.4.2
-defusedxml==0.7.0rc1
 docker==4.4.1
 entrypoints==0.3
 google-auth==1.24.0
@@ -77,7 +76,6 @@ PyDispatcher==2.0.5
 Pygments==2.7.3
 PyHamcrest==2.0.2
 pyOpenSSL==20.0.1
-pyparsing==3.0.0b1
 pyrsistent==0.17.3
 python-dateutil==2.8.1
 pytz==2020.5
@@ -97,7 +95,6 @@ scrapy-crawlera==1.7.2
 scrapyjs==0.2
 seaborn==0.11.1
 selenium==3.141.0
-Send2Trash==1.6.0b1
 service-identity==18.1.0
 shub==2.12.0
 six==1.15.0
@@ -110,7 +107,6 @@ threadpoolctl==2.1.0
 toml==0.10.2
 torch==1.7.1
 tornado==6.1
-tqdm @ file:///tmp/build/80754af9/tqdm_1596810128862/work
 traitlets==5.0.5
 Twisted==20.3.0
 typing-extensions==3.7.4.3
