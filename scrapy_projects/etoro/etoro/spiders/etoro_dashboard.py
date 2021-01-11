@@ -3,6 +3,7 @@ import os
 import re
 from time import sleep
 
+import requests
 import scrapy
 from selenium import webdriver
 from ..settings import CHROMEDRIVER_PATH
@@ -33,6 +34,7 @@ class EtoroDashboardSpider(scrapy.Spider):
         f'https://www.etoro.com/',
     )
 
+
     def start_requests(self):
         for url in self.start_urls:
             yield scrapy.Request(url, self.parse)
@@ -61,4 +63,5 @@ class EtoroDashboardSpider(scrapy.Spider):
                 break
             objs.extend(obj)
 
-        return objs
+        with open("investor_dashboard.json","w") as f:
+            json.dump(objs, f)

@@ -104,6 +104,6 @@ CONCURRENT_REQUESTS_PER_IP = 1
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
-CHROMEDRIVER_PATH = "/scraper/etoro/chromedriver"
-GECKODRIVER_PATH = "/scraper/etoro/geckodriver"
+CHROMEDRIVER_PATH = "../chromedriver"
+GECKODRIVER_PATH = "../geckodriver"
 

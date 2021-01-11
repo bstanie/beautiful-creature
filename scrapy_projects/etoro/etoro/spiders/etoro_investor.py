@@ -4,34 +4,38 @@ import re
 import scrapy
 
 
-N_TOP_INVESTORS = 500
-
-
 class EtoroInvestorSpider(scrapy.Spider):
+
+    N_TOP_INVESTORS = 100
+
     name = "etoro_investor"
     allowed_domains = ["etoro.com"]
-    params = {}
-    investor_portfolios = []
-    scraped_investor_ids = []
-    dashboard_investor_ids = []
-    if os.path.exists("investors_dashboard.json"):
-        with open("investors_dashboard.json") as f:
-            investors = json.load(f)
-            dashboard_investor_ids = [inv["CustomerId"] for inv in investors][:N_TOP_INVESTORS]
 
-    if os.path.exists("investor_portfolio.json"):
-        with open("investor_portfolio.json") as f:
-            if len(f.read()) != 0:
-                f.seek(0)
-                investor_portfolios = json.load(f)
-                scraped_investor_ids = [int(inv["investor_id"]) for inv in investor_portfolios]
-
-    # instrument_mapping = json.loads(requests.get(
-    #     "http://api.etorostatic.com/sapi/instrumentsmetadata/V1.1/instruments/bulk?bulkNumber=1&totalBulks=1").content)
+    def __init__(self, name=None, **kwargs):
+        super().__init__(name, **kwargs)
+        self.investor_portfolio = []
 
     def start_requests(self):
+        scraped_investor_ids = []
+        dashboard_investor_ids = []
+
+        if os.path.exists("investor_dashboard.json"):
+            with open("investor_dashboard.json", "r") as f:
+                if len(f.read()) != 0:
+                    f.seek(0)
+                    investors = json.load(f)
+                    dashboard_investor_ids = [inv["CustomerId"] for inv in investors][:self.N_TOP_INVESTORS]
+
+        if os.path.exists("investor_portfolio.json"):
+            with open("investor_portfolio.json", "r") as f:
+                if len(f.read()) != 0:
+                    f.seek(0)
+                    investor_portfolio = json.load(f)
+                    self.investor_portfolio = investor_portfolio
+                    scraped_investor_ids = [int(inv["investor_id"]) for inv in investor_portfolio]
+
         start_urls = ["https://www.etoro.com/sapi/trade-data-real/live/public/portfolios?cid=" + str(inv_id) for inv_id
-                      in self.dashboard_investor_ids if inv_id not in self.scraped_investor_ids]
+                      in dashboard_investor_ids if inv_id not in scraped_investor_ids]
         for url in start_urls:
             yield scrapy.Request(url, self.parse)
 
@@ -49,5 +53,5 @@ class EtoroInvestorSpider(scrapy.Spider):
         portfolio["investor_id"] = investor_id
 
         with open("investor_portfolio.json", 'w') as f:
-            self.investor_portfolios.append(portfolio)
-            json.dump(self.investor_portfolios, f)
+            self.investor_portfolio.append(portfolio)
+            json.dump(self.investor_portfolio, f)
