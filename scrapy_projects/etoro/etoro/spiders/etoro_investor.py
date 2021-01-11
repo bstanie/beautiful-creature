@@ -6,14 +6,11 @@ from datetime import datetime
 import scrapy
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
-
 from scrapy_projects.etoro.etoro.settings import GECKODRIVER_PATH, CHROMEDRIVER_PATH
-
-import logging
 
 
 class EtoroInvestorSpider(scrapy.Spider):
-    N_TOP_INVESTORS = 100
+    N_TOP_INVESTORS = 1000
 
     name = "etoro_investor"
     allowed_domains = ["etoro.com"]
@@ -40,7 +37,7 @@ class EtoroInvestorSpider(scrapy.Spider):
                     f.seek(0)
                     investor_portfolio = json.load(f)
                     self.investor_portfolio = investor_portfolio
-                    scraped_investor_names = [int(inv["investor_name"]) for inv in investor_portfolio]
+                    scraped_investor_names = [inv["investor_name"] for inv in investor_portfolio]
 
         start_urls = [f"https://www.etoro.com/people/{inv_name}/portfolio" for inv_name
                       in dashboard_investor_names if inv_name not in scraped_investor_names]
@@ -49,7 +46,7 @@ class EtoroInvestorSpider(scrapy.Spider):
 
     def parse(self, response, **kwargs):
 
-        print(f"Scraped items: {len(self.investor_portfolio)}")
+        print(f"Scraped items: {len(self.investor_portfolio)} of {self.N_TOP_INVESTORS}")
         # substr = re.findall("var model = (.*)\}\]\}", str(response.body))
         # portfolio = {}
         # if len(substr) == 1:
@@ -94,5 +91,3 @@ class EtoroInvestorSpider(scrapy.Spider):
         with open("investor_portfolio.json", 'w') as f:
             self.investor_portfolio.append(portfolio)
             json.dump(self.investor_portfolio, f)
-
-        time.sleep(3)
