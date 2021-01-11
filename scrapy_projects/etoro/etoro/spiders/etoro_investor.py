@@ -1,11 +1,19 @@
 import json
 import os
-import re
+import time
+from datetime import datetime
+
 import scrapy
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+
+from scrapy_projects.etoro.etoro.settings import GECKODRIVER_PATH, CHROMEDRIVER_PATH
+
+import logging
 
 
 class EtoroInvestorSpider(scrapy.Spider):
-    N_TOP_INVESTORS = 2000
+    N_TOP_INVESTORS = 100
 
     name = "etoro_investor"
     allowed_domains = ["etoro.com"]
@@ -15,15 +23,16 @@ class EtoroInvestorSpider(scrapy.Spider):
         self.investor_portfolio = []
 
     def start_requests(self):
-        scraped_investor_ids = []
-        dashboard_investor_ids = []
+
+        scraped_investor_names = []
+        dashboard_investor_names = []
 
         if os.path.exists("investor_dashboard.json"):
             with open("investor_dashboard.json", "r") as f:
                 if len(f.read()) != 0:
                     f.seek(0)
                     investors = json.load(f)
-                    dashboard_investor_ids = [inv["CustomerId"] for inv in investors][:self.N_TOP_INVESTORS]
+                    dashboard_investor_names = [inv["UserName"].lower() for inv in investors][:self.N_TOP_INVESTORS]
 
         if os.path.exists("investor_portfolio.json"):
             with open("investor_portfolio.json", "r") as f:
@@ -31,29 +40,59 @@ class EtoroInvestorSpider(scrapy.Spider):
                     f.seek(0)
                     investor_portfolio = json.load(f)
                     self.investor_portfolio = investor_portfolio
-                    scraped_investor_ids = [int(inv["investor_id"]) for inv in investor_portfolio]
+                    scraped_investor_names = [int(inv["investor_name"]) for inv in investor_portfolio]
 
-        start_urls = ["https://www.etoro.com/sapi/trade-data-real/live/public/portfolios?cid=" + str(inv_id) for inv_id
-                      in dashboard_investor_ids if inv_id not in scraped_investor_ids]
-        for idx, url in enumerate(start_urls):
-            if idx % 10 == 0:
-                print(f"Tried {idx} of {len(start_urls)} items")
-                print(f"Scraped items: {len(self.investor_portfolio)}")
+        start_urls = [f"https://www.etoro.com/people/{inv_name}/portfolio" for inv_name
+                      in dashboard_investor_names if inv_name not in scraped_investor_names]
+        for url in start_urls:
             yield scrapy.Request(url, self.parse)
 
     def parse(self, response, **kwargs):
-        substr = re.findall("var model = (.*)\}\]\}", str(response.body))
+
+        print(f"Scraped items: {len(self.investor_portfolio)}")
+        # substr = re.findall("var model = (.*)\}\]\}", str(response.body))
+        # portfolio = {}
+        # if len(substr) == 1:
+        #     portfolio = substr[0] + "}]}"
+        #     portfolio = json.loads(portfolio)
+        # elif len(substr) == 0:
+        #     substr = re.findall("var model = (.*)\]\}", str(response.body))
+        #     portfolio = substr[0] + "]}"
+        #     portfolio = json.loads(portfolio)
+
+        profile = webdriver.FirefoxProfile()
+        opts = Options()
+        opts.set_headless()
+        profile.set_preference("dom.webdriver.enabled", False)
+        profile.set_preference('useAutomationExtension', False)
+        profile.update_preferences()
+        self.driver = webdriver.Firefox(executable_path=GECKODRIVER_PATH,
+                                        firefox_options=opts, firefox_profile=profile)
+
+        self.driver.get(response.url)
         portfolio = {}
-        if len(substr) == 1:
-            portfolio = substr[0] + "}]}"
-            portfolio = json.loads(portfolio)
-        elif len(substr) == 0:
-            substr = re.findall("var model = (.*)\]\}", str(response.body))
-            portfolio = substr[0] + "]}"
-            portfolio = json.loads(portfolio)
-        investor_id = response.url.split("cid=")[1]
-        portfolio["investor_id"] = investor_id
+        investor_name = response.url.split("/")[-2]
+        portfolio["investor_name"] = investor_name
+        portfolio["portfolio"] = []
+        portfolio["datetime"] = datetime.now().strftime("%y-%m-%d")
+        portfolio_elements = self.driver.find_elements_by_css_selector(".ui-table-row.ng-scope.sell")
+        for el in portfolio_elements:
+            ticker_data = [_.text for _ in el.find_elements_by_css_selector(".ng-binding")][:-6]
+            if len(ticker_data) == 6:
+                portfolio_element = {"company_ticker": ticker_data[0], "company_name": ticker_data[1],
+                                     "type": ticker_data[2], "invested": ticker_data[3],
+                                     "profit/loss": ticker_data[4], "value": ticker_data[5]}
+            elif len(ticker_data) == 5:
+                portfolio_element = {"company_ticker": ticker_data[0], "type": ticker_data[1],
+                                     "invested": ticker_data[2],
+                                     "profit/loss": ticker_data[3], "value": ticker_data[4]}
+            else:
+                portfolio_element = {"ERROR": "ERROR"}
+
+            portfolio["portfolio"].append(portfolio_element)
 
         with open("investor_portfolio.json", 'w') as f:
             self.investor_portfolio.append(portfolio)
             json.dump(self.investor_portfolio, f)
+
+        time.sleep(3)

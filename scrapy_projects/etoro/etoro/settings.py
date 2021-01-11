@@ -12,18 +12,14 @@ BOT_NAME = 'enot'
 SPIDER_MODULES = ['etoro.spiders']
 NEWSPIDER_MODULE = 'etoro.spiders'
 
-SPLASH_URL = 'http://localhost:8050'
-
-DOWNLOADER_MIDDLEWARES = {
-    'scrapyjs.SplashMiddleware': 725,
-    'scrapy_crawlera.CrawleraMiddleware': 610
-}
-
 DUPEFILTER_CLASS = 'scrapyjs.SplashAwareDupeFilter'
 
-# enable crawlera
-CRAWLERA_ENABLED = True
 
+DOWNLOADER_MIDDLEWARES = {
+    'scrapy_crawlera.CrawleraMiddleware': 610
+}
+# enable crawlera
+CRAWLERA_ENABLED = False
 # the APIkey you get with your subscription
 CRAWLERA_APIKEY = 'e12104d8aa97470caf35d13787d534bd'
 
@@ -33,7 +29,7 @@ CRAWLERA_APIKEY = 'e12104d8aa97470caf35d13787d534bd'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
-RETRY_HTTP_CODES = [512, 540]
+# RETRY_HTTP_CODES = [512, 540]
 # RETRY_TIMES = 5
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
