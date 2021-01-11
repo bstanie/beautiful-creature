@@ -1,2 +1,2 @@
 # beautiful-creature
-Yet another NN based traiding system for forex
+Yet another NN based trading system for forex
