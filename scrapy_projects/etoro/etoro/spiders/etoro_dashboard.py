@@ -5,6 +5,7 @@ from time import sleep
 
 import scrapy
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 
 
 class EtoroDashboardSpider(scrapy.Spider):
@@ -38,16 +39,16 @@ class EtoroDashboardSpider(scrapy.Spider):
 
     def parse(self, response, **kwargs):
 
-        options = webdriver.ChromeOptions()
-        options.add_argument("headless")
-        options.add_argument(
-            "user-agent=Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 640 XL LTE) AppleWebKit/537.36"
-            " (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10166")
+        profile = webdriver.FirefoxProfile()
+        opts = Options()
+        opts.set_headless()
+        profile.set_preference("dom.webdriver.enabled", False)
+        profile.set_preference('useAutomationExtension', False)
+        profile.update_preferences()
+        driver = webdriver.Firefox(
+            executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "geckodriver"),
+            firefox_options=opts, firefox_profile=profile)
 
-        desired_capabilities = options.to_capabilities()
-        driver = webdriver.Chrome(
-            executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "chromedriver"),
-            desired_capabilities=desired_capabilities)
         objs = list()
         for page in range(1, 99):
             print(f"Scraping page {page}")
