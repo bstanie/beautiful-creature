@@ -12,6 +12,10 @@ class MarketBeatSpider(scrapy.Spider):
     nasdaq_stocks = pd.read_csv("nasdaq.csv").sort_values("Market Cap", ascending=False)["Symbol"].tolist()
     nyse_stocks = pd.read_csv("nyse.csv").sort_values("Market Cap", ascending=False)["Symbol"].tolist()
 
+    def __init__(self, name=None, **kwargs):
+        super().__init__(name, **kwargs)
+        self.price_target = []
+
     def start_requests(self):
         nasdaq_urls = [
             "https://www.marketbeat.com/scripts/charts/PriceTargetCSV.ashx?prefix={stock_exchange}&Symbol={ticker}".
@@ -29,4 +33,7 @@ class MarketBeatSpider(scrapy.Spider):
 
     def parse(self, response, **kwargs):
         price_target = json.loads(pd.read_csv(BytesIO(response.body), sep=",").to_json(orient="records"))
-        return {"stock": response.url.split("Symbol=")[1], "history": price_target}
+        with open("marketbeat.json", "w") as f:
+            stock_info = {"stock": response.url.split("Symbol=")[1], "history": price_target}
+            self.price_target.append(stock_info)
+            json.dump(self.price_target, f)
