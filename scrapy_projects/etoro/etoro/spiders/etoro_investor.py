@@ -29,8 +29,10 @@ class EtoroInvestorSpider(scrapy.Spider):
                     f.seek(0)
                     investors = json.load(f)
                     dashboard_investor_names = [inv["UserName"].lower() for inv in investors]
-                    dashboard_investor_names = dashboard_investor_names[:self.N_TOP_INVESTORS] if len(
-                        dashboard_investor_names) <= self.N_TOP_INVESTORS else dashboard_investor_names
+                    if len(dashboard_investor_names) >= self.N_TOP_INVESTORS:
+                        self.N_TOP_INVESTORS = len(dashboard_investor_names)
+                    else:
+                        dashboard_investor_names = dashboard_investor_names[:self.N_TOP_INVESTORS]
 
         if os.path.exists("investor_portfolio.json"):
             with open("investor_portfolio.json", "r") as f:
