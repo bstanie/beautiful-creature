@@ -9,7 +9,7 @@ from selenium.webdriver.firefox.options import Options
 
 
 class EtoroInvestorSpider(scrapy.Spider):
-    N_TOP_INVESTORS = 1000
+    N_TOP_INVESTORS = 2000
 
     name = "etoro_investor"
     allowed_domains = ["etoro.com"]
@@ -28,7 +28,9 @@ class EtoroInvestorSpider(scrapy.Spider):
                 if len(f.read()) != 0:
                     f.seek(0)
                     investors = json.load(f)
-                    dashboard_investor_names = [inv["UserName"].lower() for inv in investors][:self.N_TOP_INVESTORS]
+                    dashboard_investor_names = [inv["UserName"].lower() for inv in investors]
+                    dashboard_investor_names = dashboard_investor_names[:self.N_TOP_INVESTORS] if len(
+                        dashboard_investor_names) <= self.N_TOP_INVESTORS else dashboard_investor_names
 
         if os.path.exists("investor_portfolio.json"):
             with open("investor_portfolio.json", "r") as f:
