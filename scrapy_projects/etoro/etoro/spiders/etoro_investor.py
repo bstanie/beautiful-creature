@@ -18,6 +18,20 @@ class EtoroInvestorSpider(scrapy.Spider):
         super().__init__(name, **kwargs)
         self.investor_portfolio = []
 
+        profile = webdriver.FirefoxProfile()
+        opts = Options()
+        opts.set_headless()
+        profile.set_preference("dom.webdriver.enabled", False)
+        profile.set_preference('useAutomationExtension', False)
+        profile.set_preference('permissions.default.image', 2)
+        profile.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
+
+        profile.update_preferences()
+
+        self.driver = webdriver.Firefox(
+            executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "geckodriver"),
+            firefox_options=opts, firefox_profile=profile)
+
     def start_requests(self):
 
         scraped_investor_names = []
@@ -50,25 +64,7 @@ class EtoroInvestorSpider(scrapy.Spider):
     def parse(self, response, **kwargs):
 
         print(f"Scraped items: {len(self.investor_portfolio)} of {self.N_TOP_INVESTORS}")
-        # substr = re.findall("var model = (.*)\}\]\}", str(response.body))
-        # portfolio = {}
-        # if len(substr) == 1:
-        #     portfolio = substr[0] + "}]}"
-        #     portfolio = json.loads(portfolio)
-        # elif len(substr) == 0:
-        #     substr = re.findall("var model = (.*)\]\}", str(response.body))
-        #     portfolio = substr[0] + "]}"
-        #     portfolio = json.loads(portfolio)
 
-        profile = webdriver.FirefoxProfile()
-        opts = Options()
-        opts.set_headless()
-        profile.set_preference("dom.webdriver.enabled", False)
-        profile.set_preference('useAutomationExtension', False)
-        profile.update_preferences()
-        self.driver = webdriver.Firefox(
-            executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "geckodriver"),
-            firefox_options=opts, firefox_profile=profile)
 
         self.driver.get(response.url)
         portfolio = {}
