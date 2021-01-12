@@ -65,28 +65,29 @@ class EtoroInvestorSpider(scrapy.Spider):
 
         print(f"Scraped items: {len(self.investor_portfolio)} of {self.N_TOP_INVESTORS}")
 
-
-        self.driver.get(response.url)
         portfolio = {}
         investor_name = response.url.split("/")[-2]
         portfolio["investor_name"] = investor_name
-        portfolio["portfolio"] = []
+        portfolio["items"] = []
         portfolio["datetime"] = datetime.now().strftime("%y-%m-%d")
+
+        self.driver.get(response.url)
+        time.sleep(5)
         portfolio_elements = self.driver.find_elements_by_css_selector(".ui-table-row.ng-scope.sell")
         for el in portfolio_elements:
             ticker_data = [_.text for _ in el.find_elements_by_css_selector(".ng-binding")][:-6]
             if len(ticker_data) == 6:
-                portfolio_element = {"company_ticker": ticker_data[0], "company_name": ticker_data[1],
+                portfolio_item = {"company_ticker": ticker_data[0], "company_name": ticker_data[1],
                                      "type": ticker_data[2], "invested": ticker_data[3],
                                      "profit/loss": ticker_data[4], "value": ticker_data[5]}
             elif len(ticker_data) == 5:
-                portfolio_element = {"company_ticker": ticker_data[0], "type": ticker_data[1],
+                portfolio_item = {"company_ticker": ticker_data[0], "type": ticker_data[1],
                                      "invested": ticker_data[2],
                                      "profit/loss": ticker_data[3], "value": ticker_data[4]}
             else:
-                portfolio_element = {"ERROR": "ERROR"}
+                portfolio_item = {"ERROR": "ERROR"}
 
-            portfolio["portfolio"].append(portfolio_element)
+            portfolio["items"].append(portfolio_item)
 
         with open("investor_portfolio.json", 'w') as f:
             self.investor_portfolio.append(portfolio)
