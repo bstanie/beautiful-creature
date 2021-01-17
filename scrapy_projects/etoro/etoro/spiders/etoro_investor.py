@@ -9,6 +9,9 @@ from selenium.webdriver.firefox.options import Options
 
 
 class EtoroInvestorSpider(scrapy.Spider):
+
+    timestamp = datetime.now().strftime("%d-%m-%y")
+
     N_TOP_INVESTORS = 2000
 
     name = "etoro_investor"
@@ -37,8 +40,8 @@ class EtoroInvestorSpider(scrapy.Spider):
         scraped_investor_names = []
         dashboard_investor_names = []
 
-        if os.path.exists("investor_dashboard.json"):
-            with open("investor_dashboard.json", "r") as f:
+        if os.path.exists(f"investor_dashboard_{self.timestamp}.json"):
+            with open(f"investor_dashboard_{self.timestamp}.json", "r") as f:
                 if len(f.read()) != 0:
                     f.seek(0)
                     investors = json.load(f)
@@ -48,8 +51,8 @@ class EtoroInvestorSpider(scrapy.Spider):
                     else:
                         self.N_TOP_INVESTORS = len(dashboard_investor_names)
 
-        if os.path.exists("investor_portfolio.json"):
-            with open("investor_portfolio.json", "r") as f:
+        if os.path.exists(f"investor_portfolio_{self.timestamp}.json"):
+            with open(f"investor_portfolio_{self.timestamp}.json", "r") as f:
                 if len(f.read()) != 0:
                     f.seek(0)
                     investor_portfolio = json.load(f)
@@ -89,6 +92,6 @@ class EtoroInvestorSpider(scrapy.Spider):
 
             portfolio["items"].append(portfolio_item)
 
-        with open("investor_portfolio.json", 'w') as f:
+        with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
             self.investor_portfolio.append(portfolio)
             json.dump(self.investor_portfolio, f)

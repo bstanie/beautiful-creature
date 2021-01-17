@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from datetime import datetime
 from time import sleep
 
 import scrapy
@@ -9,6 +10,7 @@ from selenium.webdriver.firefox.options import Options
 
 
 class EtoroDashboardSpider(scrapy.Spider):
+    timestamp = datetime.now().strftime("%d-%m-%y")
     name = "etoro_dashboard"
     allowed_domains = ["etoro.com"]
     params = {"hasavatar": "true",
@@ -62,5 +64,5 @@ class EtoroDashboardSpider(scrapy.Spider):
                 break
             objs.extend(obj)
 
-        with open("investor_dashboard.json", "w") as f:
+        with open(f"investor_dashboard_{self.timestamp}.json", "w") as f:
             json.dump(objs, f)
