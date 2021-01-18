@@ -9,10 +9,10 @@ from selenium.webdriver.firefox.options import Options
 
 
 class EtoroInvestorSpider(scrapy.Spider):
-
     timestamp = datetime.now().strftime("%d-%m-%y")
 
     N_TOP_INVESTORS = 9999
+    SAVE_EACH = 25
 
     name = "etoro_investor"
     allowed_domains = ["etoro.com"]
@@ -81,17 +81,20 @@ class EtoroInvestorSpider(scrapy.Spider):
             ticker_data = [_.text for _ in el.find_elements_by_css_selector(".ng-binding")][:-6]
             if len(ticker_data) == 6:
                 portfolio_item = {"company_ticker": ticker_data[0], "company_name": ticker_data[1],
-                                     "type": ticker_data[2], "invested": ticker_data[3],
-                                     "profit/loss": ticker_data[4], "value": ticker_data[5]}
+                                  "type": ticker_data[2], "invested": ticker_data[3],
+                                  "profit/loss": ticker_data[4], "value": ticker_data[5]}
             elif len(ticker_data) == 5:
                 portfolio_item = {"company_ticker": ticker_data[0], "type": ticker_data[1],
-                                     "invested": ticker_data[2],
-                                     "profit/loss": ticker_data[3], "value": ticker_data[4]}
+                                  "invested": ticker_data[2],
+                                  "profit/loss": ticker_data[3], "value": ticker_data[4]}
             else:
                 portfolio_item = {"ERROR": "ERROR"}
 
             portfolio["items"].append(portfolio_item)
 
-        with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
-            self.investor_portfolio.append(portfolio)
-            json.dump(self.investor_portfolio, f)
+        self.investor_portfolio.append(portfolio)
+
+        if len(self.investor_portfolio) % self.SAVE_EACH == 0:
+            print("Saving results to json")
+            with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
+                json.dump(self.investor_portfolio, f)

@@ -15,4 +15,5 @@ seaborn==0.11.1
 selenium==3.141.0
 shub==2.12.0
 tensorboard==2.4.0
+pytrends==4.7.3
 

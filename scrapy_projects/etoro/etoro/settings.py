@@ -18,6 +18,7 @@ DUPEFILTER_CLASS = 'scrapyjs.SplashAwareDupeFilter'
 DOWNLOADER_MIDDLEWARES = {
     'scrapy_crawlera.CrawleraMiddleware': 610
 }
+
 # enable crawlera
 CRAWLERA_ENABLED = False
 # the APIkey you get with your subscription
@@ -75,9 +76,9 @@ CONCURRENT_REQUESTS = 1
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    'etoro.pipelines.EtoroPipeline': 300,
-# }
+ITEM_PIPELINES = {
+   'etoro.pipelines.EtoroPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

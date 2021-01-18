@@ -5,9 +5,12 @@
 
 
 # useful for handling different item types with a single interface
+
+import json
+
 from itemadapter import ItemAdapter
 
 
 class EtoroPipeline:
-    def process_item(self, item, spider):
-        return item
+
+    pass
