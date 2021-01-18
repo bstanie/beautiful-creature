@@ -12,7 +12,7 @@ class EtoroInvestorSpider(scrapy.Spider):
 
     timestamp = datetime.now().strftime("%d-%m-%y")
 
-    N_TOP_INVESTORS = 2000
+    N_TOP_INVESTORS = 9999
 
     name = "etoro_investor"
     allowed_domains = ["etoro.com"]

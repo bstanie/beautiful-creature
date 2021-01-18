@@ -17,10 +17,11 @@ class EtoroDashboardSpider(scrapy.Spider):
               "copyblock": "false",
               "period": "OneYearAgo",
               "gainmin": 5,
-              "maxmonthlyriskscoremax": 6,
               "dailyddmin": -5,
+              "dailyddmax": 0,
               "verified": "true",
               "maxmonthlyriskscoremin": 1,
+              "maxmonthlyriskscoremax": 6,
               "tradesmin": 5,
               "weeklyddmin": -15,
               "profitablemonthspctmin": 50,
@@ -51,6 +52,16 @@ class EtoroDashboardSpider(scrapy.Spider):
             executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "geckodriver"),
             firefox_options=opts, firefox_profile=profile)
 
+        objs = self.parse_with_params(driver)
+        self.params["dailyddmin"] = -10
+        self.params["dailyddmax"] = -6
+        objs2 = self.parse_with_params(driver)
+        objs.extend(objs2)
+        assert len(set([_["CustomerId"] for _ in objs])) == 3000
+        with open(f"investor_dashboard_{self.timestamp}.json", "w") as f:
+            json.dump(objs, f)
+
+    def parse_with_params(self, driver):
         objs = list()
         for page in range(1, 99):
             print(f"Scraping page {page}")
@@ -63,6 +74,4 @@ class EtoroDashboardSpider(scrapy.Spider):
             if len(obj) == 0:
                 break
             objs.extend(obj)
-
-        with open(f"investor_dashboard_{self.timestamp}.json", "w") as f:
-            json.dump(objs, f)
+        return objs
