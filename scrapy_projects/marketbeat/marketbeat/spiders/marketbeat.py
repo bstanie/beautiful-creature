@@ -36,12 +36,12 @@ class MarketBeatSpider(scrapy.Spider):
             "Symbol"].tolist()
 
         nasdaq_urls = [
-            "https://www.marketbeat.com/scripts/charts/PriceTargetCSV.ashx?prefix={stock_exchange}&Symbol={ticker}".
+            "https://www.marketbeat.com/scripts/charts/PriceTargetCSV.ashx?prefix={stock_exchange}&Symbol={ticker}/".
                 format(stock_exchange="NASDAQ", ticker=stock_name) for stock_name in nasdaq_stocks
         ]
 
         nyse_urls = [
-            "https://www.marketbeat.com/scripts/charts/PriceTargetCSV.ashx?prefix={stock_exchange}&Symbol={ticker}".
+            "https://www.marketbeat.com/scripts/charts/PriceTargetCSV.ashx?prefix={stock_exchange}&Symbol={ticker}/".
                 format(stock_exchange="NYSE", ticker=stock_name) for stock_name in nyse_stocks
         ]
 
@@ -56,5 +56,5 @@ class MarketBeatSpider(scrapy.Spider):
 
         if len(self.price_target) % self.SAVE_EACH == 0:
             print(f"Scraped: {len(self.price_target)} companies. Saving...")
-            with open("marketbeat.json", "w") as f:
+            with open("marketbeat_price_target.json", "w") as f:
                 json.dump(self.price_target, f)
