@@ -7,12 +7,20 @@ import scrapy
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
+import os
+import sys
+
+sys.path.append(
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))))
+
+from global_settings import SAVE_EACH_N_ITEMS, ETORO_TOP_N_INVESTORS
+
 
 class EtoroInvestorSpider(scrapy.Spider):
     timestamp = datetime.now().strftime("%d-%m-%y")
 
-    N_TOP_INVESTORS = 9999
-    SAVE_EACH = 25
+    N_TOP_INVESTORS = ETORO_TOP_N_INVESTORS
+    SAVE_EACH = SAVE_EACH_N_ITEMS
 
     name = "etoro_investor"
     allowed_domains = ["etoro.com"]
@@ -96,5 +104,10 @@ class EtoroInvestorSpider(scrapy.Spider):
 
         if len(self.investor_portfolio) % self.SAVE_EACH == 0:
             print("Saving results to json")
+            with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
+                json.dump(self.investor_portfolio, f)
+
+        if len(self.investor_portfolio) == self.N_TOP_INVESTORS:
+            print("Saving final results to json")
             with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
                 json.dump(self.investor_portfolio, f)
