@@ -58,3 +58,8 @@ class MarketBeatSpider(scrapy.Spider):
             print(f"Scraped: {len(self.price_target)} companies. Saving...")
             with open("marketbeat_price_target.json", "w") as f:
                 json.dump(self.price_target, f)
+
+        if len(self.price_target) % self.TOP_N_COMPANIES == 0:
+            print(f"Scraped: {len(self.price_target)} companies. Saving...")
+            with open("marketbeat_price_target.json", "w") as f:
+                json.dump(self.price_target, f)

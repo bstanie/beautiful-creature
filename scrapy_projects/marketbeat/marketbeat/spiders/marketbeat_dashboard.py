@@ -14,8 +14,8 @@ sys.path.append(
 from global_settings import TOP_N_STOCKS, SAVE_EACH_N_ITEMS, PROJECT_ROOT
 
 
-class MarketBeatRankSpider(scrapy.Spider):
-    name = "marketbeat_ranks"
+class MarketBeatDashboardSpider(scrapy.Spider):
+    name = "marketbeat_dashboard"
 
     TOP_N_COMPANIES = TOP_N_STOCKS
     SAVE_EACH = SAVE_EACH_N_ITEMS
