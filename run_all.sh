@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo test > test.txt
 start=`date +%s`
 root_dir=$PWD
 
