@@ -1,19 +1,20 @@
 #!/bin/bash
 
 start=`date +%s`
+root_dir=$PWD
 
-## Scrape search trends
-#python social_trends/social_trends.py
+# Scrape search trends
+python "social_trends/social_trends.py"
 
-## Scrape etoro
-cd scrapy_projects/etoro/etoro
-#scrapy crawl etoro_dashboard
-#scrapy crawl etoro_investor
-#
-## Scrape marketbeat
-cd ../../marketbeat/marketbeat
-scrapy crawl marketbeat
-#scrapy crawl marketbeat_dashboard
+# Scrape etoro
+cd "${root_dir}/scrapy_projects/etoro/etoro"
+scrapy crawl etoro_dashboard
+scrapy crawl etoro_investor
+
+# Scrape marketbeat
+cd "${root_dir}/scrapy_projects/marketbeat/marketbeat"
+scrapy crawl marketbeat_price_target
+scrapy crawl marketbeat_dashboard
 
 end=`date +%s`
 runtime=$((end-start))

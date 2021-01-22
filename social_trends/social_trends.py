@@ -28,8 +28,7 @@ def clean_stock_name(stock_name):
         replace("Inc", "").replace("Plc", "").replace("plc", "").replace("p.l.c.", "").replace("ADS", ""). \
         replace("ADR", "").replace("Company", "").replace("& Co.", "").replace("Group", ""). \
         replace("Capital Stock", "").replace("Stock", "").replace("PLC", "").replace(".com", "").replace(
-        'American   each representing eight  share',
-        "")
+        'American   each representing eight  share', "").replace("Wholesale", "").replace("US", "")
     name = re.sub(r"\(.*?\)", "", name)
     name = re.sub(r"\s{2,}", " ", name).strip()
     return name
@@ -65,7 +64,7 @@ def extract_search_data():
 
     result = pd.concat(dataset, axis=1)
     timestamp = datetime.now().strftime("%d-%m-%y")
-    result.to_csv(f'search_trends_{timestamp}.csv')
+    result.to_csv(os.path.join(PROJECT_ROOT, "social_trends", f'search_trends_{timestamp}.csv'))
 
 
 if __name__ == '__main__':

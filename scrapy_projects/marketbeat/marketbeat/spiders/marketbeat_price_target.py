@@ -14,10 +14,9 @@ sys.path.append(
 from global_settings import TOP_N_STOCKS, SAVE_EACH_N_ITEMS, PROJECT_ROOT
 
 
-class MarketBeatSpider(scrapy.Spider):
-    name = "marketbeat"
+class MarketBeatPriceTargetSpider(scrapy.Spider):
+    name = "marketbeat_price_target"
     allowed_domains = ["marketbeat.com"]
-
 
 
     TOP_N_COMPANIES = TOP_N_STOCKS
@@ -36,12 +35,12 @@ class MarketBeatSpider(scrapy.Spider):
             "Symbol"].tolist()
 
         nasdaq_urls = [
-            "https://www.marketbeat.com/scripts/charts/PriceTargetCSV.ashx?prefix={stock_exchange}&Symbol={ticker}/".
+            "https://www.marketbeat.com/scripts/charts/PriceTargetCSV.ashx?prefix={stock_exchange}&Symbol={ticker}".
                 format(stock_exchange="NASDAQ", ticker=stock_name) for stock_name in nasdaq_stocks
         ]
 
         nyse_urls = [
-            "https://www.marketbeat.com/scripts/charts/PriceTargetCSV.ashx?prefix={stock_exchange}&Symbol={ticker}/".
+            "https://www.marketbeat.com/scripts/charts/PriceTargetCSV.ashx?prefix={stock_exchange}&Symbol={ticker}".
                 format(stock_exchange="NYSE", ticker=stock_name) for stock_name in nyse_stocks
         ]
 
