@@ -13,6 +13,8 @@ sys.path.append(
 
 from global_settings import TOP_N_STOCKS, SAVE_EACH_N_ITEMS, PROJECT_ROOT
 
+import logging
+logger = logging.root
 
 class MarketBeatDashboardSpider(scrapy.Spider):
     name = "marketbeat_dashboard"
@@ -64,11 +66,11 @@ class MarketBeatDashboardSpider(scrapy.Spider):
         self.data.append(stock_profile)
 
         if len(self.data) % self.SAVE_EACH == 0:
-            print(f"Scraped: {len(self.data)} companies. Saving...")
+            logger.info(f"Scraped: {len(self.data)} companies. Saving...")
             with open("marketbeat_dashboard.json", "w") as f:
                 json.dump(self.data, f)
 
         if len(self.data) == self.TOP_N_COMPANIES:
-            print(f"Scraped: {len(self.data)} companies. Saving...")
+            logger.info(f"Scraped: {len(self.data)} companies. Saving...")
             with open("marketbeat_dashboard.json", "w") as f:
                 json.dump(self.data, f)

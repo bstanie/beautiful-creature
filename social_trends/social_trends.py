@@ -9,6 +9,9 @@ import re
 
 import os
 import sys
+import logging
+
+logger = logging.root
 
 sys.path.append(
     os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))))
@@ -35,7 +38,7 @@ def clean_stock_name(stock_name):
 
 
 def extract_search_data():
-    print(f"Scraping google trends data for {TOP_N_COMPANIES} top companies")
+    logger.info(f"Scraping google trends data for {TOP_N_COMPANIES} top companies")
     nasdaq_stocks = pd.read_csv(os.path.join(PROJECT_ROOT, "nasdaq.csv")).sort_values("Market Cap", ascending=False)
     nyse_stocks = pd.read_csv(os.path.join(PROJECT_ROOT, "nyse.csv")).sort_values("Market Cap", ascending=False)
     stocks = pd.concat([nasdaq_stocks, nyse_stocks]).sort_values("Market Cap", ascending=False).reset_index().iloc[
@@ -48,7 +51,7 @@ def extract_search_data():
     pytrend = TrendReq(hl='en-US', tz=360, timeout=(10, 25))
     dataset = []
 
-    for chunk in tqdm(chunks):
+    for idx, chunk in enumerate(tqdm(chunks)):
         try:
             symbols = [f"{_[0]}" for _ in chunk]
             search_phrases = [f"{_[1]} stock" for _ in chunk]
@@ -60,7 +63,7 @@ def extract_search_data():
                 dataset.append(data)
             time.sleep(random.randint(2, 5))
         except Exception as e:
-            print(e)
+            logger.error(e)
 
     result = pd.concat(dataset, axis=1)
     timestamp = datetime.now().strftime("%d-%m-%y")

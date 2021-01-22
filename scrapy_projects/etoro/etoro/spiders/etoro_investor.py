@@ -15,6 +15,9 @@ sys.path.append(
 
 from global_settings import SAVE_EACH_N_ITEMS, ETORO_TOP_N_INVESTORS
 
+import logging
+logger = logging.root
+
 
 class EtoroInvestorSpider(scrapy.Spider):
     timestamp = datetime.now().strftime("%d-%m-%y")
@@ -74,7 +77,7 @@ class EtoroInvestorSpider(scrapy.Spider):
 
     def parse(self, response, **kwargs):
 
-        print(f"Scraped items: {len(self.investor_portfolio)} of {self.N_TOP_INVESTORS}")
+        logger.info(f"Scraped items: {len(self.investor_portfolio)} of {self.N_TOP_INVESTORS}")
 
         portfolio = {}
         investor_name = response.url.split("/")[-2]
@@ -103,11 +106,11 @@ class EtoroInvestorSpider(scrapy.Spider):
         self.investor_portfolio.append(portfolio)
 
         if len(self.investor_portfolio) % self.SAVE_EACH == 0:
-            print("Saving results to json")
+            logger.info("Saving results to json")
             with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
                 json.dump(self.investor_portfolio, f)
 
         if len(self.investor_portfolio) == self.N_TOP_INVESTORS:
-            print("Saving final results to json")
+            logger.info("Saving final results to json")
             with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
                 json.dump(self.investor_portfolio, f)

@@ -8,6 +8,9 @@ import scrapy
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
+import logging
+logger = logging.root
+
 
 class EtoroDashboardSpider(scrapy.Spider):
     timestamp = datetime.now().strftime("%d-%m-%y")
@@ -64,7 +67,7 @@ class EtoroDashboardSpider(scrapy.Spider):
     def parse_with_params(self, driver):
         objs = list()
         for page in range(1, 99):
-            print(f"Scraping page {page}")
+            logger.info(f"Scraping page {page}")
             sleep(2)
             self.params["page"] = page
             param_str = "&".join([f"{k}={v}" for k, v in self.params.items()])

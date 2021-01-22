@@ -13,6 +13,9 @@ sys.path.append(
 
 from global_settings import TOP_N_STOCKS, SAVE_EACH_N_ITEMS, PROJECT_ROOT
 
+import logging
+logger = logging.root
+
 
 class MarketBeatPriceTargetSpider(scrapy.Spider):
     name = "marketbeat_price_target"
@@ -54,11 +57,11 @@ class MarketBeatPriceTargetSpider(scrapy.Spider):
         self.price_target.append(stock_info)
 
         if len(self.price_target) % self.SAVE_EACH == 0:
-            print(f"Scraped: {len(self.price_target)} companies. Saving...")
+            logger.info(f"Scraped: {len(self.price_target)} companies. Saving...")
             with open("marketbeat_price_target.json", "w") as f:
                 json.dump(self.price_target, f)
 
         if len(self.price_target) % self.TOP_N_COMPANIES == 0:
-            print(f"Scraped: {len(self.price_target)} companies. Saving...")
+            logger.info(f"Scraped: {len(self.price_target)} companies. Saving...")
             with open("marketbeat_price_target.json", "w") as f:
                 json.dump(self.price_target, f)
