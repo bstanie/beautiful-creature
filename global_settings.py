@@ -16,4 +16,5 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 sh.setFormatter(formatter)
 fh.setFormatter(formatter)
 logger.addHandler(fh)
+logger.addHandler(sh)
 logger.setLevel(logging.INFO)
