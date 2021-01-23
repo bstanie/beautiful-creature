@@ -61,7 +61,7 @@ def extract_search_data():
                 data = data.drop(labels=['isPartial'], axis='columns')
                 data.columns = zip(data.columns, symbols)
                 dataset.append(data)
-            time.sleep(random.randint(2, 5))
+            time.sleep(random.randint(3, 8))
         except Exception as e:
             logger.error(e)
 
