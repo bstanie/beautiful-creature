@@ -11,5 +11,8 @@ GOOGLE_TRENDS_CHUNK_SIZE = 2  # for google trends
 
 logger = logging.root
 logger.addHandler(logging.StreamHandler())
-logger.addHandler(logging.FileHandler(os.path.join(os.path.dirname(__file__), 'logging.log')))
+fh = logging.FileHandler(os.path.join(os.path.dirname(__file__), 'logging.log'))
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+logger.addHandler(fh)
 logger.setLevel(logging.INFO)
