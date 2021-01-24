@@ -5,7 +5,7 @@ import os
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 TOP_N_STOCKS = 1000  # for marketbeat and google trends
-SAVE_EACH_N_ITEMS = 25  # for marketbeat and etoro investor scraper
+SAVE_EACH_N_ITEMS = 25  # for marketbeat, toro and google trends
 ETORO_TOP_N_INVESTORS = 1000  # for etoro investor
 GOOGLE_TRENDS_CHUNK_SIZE = 2  # for google trends
 ALPHAVANTAGE_API_KEY = 'F2050WBAIPD4FC1U'

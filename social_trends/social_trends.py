@@ -16,10 +16,8 @@ logger = logging.root
 sys.path.append(
     os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))))
 
-from global_settings import TOP_N_STOCKS, GOOGLE_TRENDS_CHUNK_SIZE, PROJECT_ROOT
-
-TOP_N_COMPANIES = TOP_N_STOCKS
-CHUNK_SIZE = GOOGLE_TRENDS_CHUNK_SIZE
+from global_settings import TOP_N_STOCKS as TOP_N_COMPANIES, GOOGLE_TRENDS_CHUNK_SIZE as CHUNK_SIZE, PROJECT_ROOT, \
+    SAVE_EACH_N_ITEMS
 
 
 def clean_stock_name(stock_name):
@@ -66,9 +64,13 @@ def extract_search_data():
         except Exception as e:
             logger.error(e)
 
-    result = pd.concat(dataset, axis=1)
-    timestamp = datetime.now().strftime("%d-%m-%y")
-    result.to_csv(os.path.join(PROJECT_ROOT, "social_trends", f'search_trends_{timestamp}.csv'))
+        if idx % SAVE_EACH_N_ITEMS == 0:
+            result = pd.concat(dataset, axis=1)
+            timestamp = datetime.now().strftime("%d-%m-%y")
+            logger.info(f"Google trends - scraped {idx * CHUNK_SIZE} companies")
+            file_path = os.path.join(PROJECT_ROOT, "social_trends", f'search_trends_{timestamp}.json')
+            with open(file_path, 'w') as f:
+                result.to_json(f)
 
 
 if __name__ == '__main__':
