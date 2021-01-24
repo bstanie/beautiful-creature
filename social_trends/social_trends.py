@@ -40,12 +40,12 @@ def clean_stock_name(stock_name):
 
 def extract_search_data():
     dataset = []
+    logger.info(f"Scraping google trends data for {TOP_N_COMPANIES} top companies")
     if os.path.exists(file_path):
         with open(file_path, 'r') as f:
             dataset = [pd.read_json(f)]
             scraped_comp_count = dataset[0].shape[1]
             logger.info(f"{scraped_comp_count} companies already scraped, {TOP_N_COMPANIES-scraped_comp_count} left")
-    logger.info(f"Scraping google trends data for {TOP_N_COMPANIES} top companies")
     nasdaq_stocks = pd.read_csv(os.path.join(PROJECT_ROOT, "nasdaq.csv")).sort_values("Market Cap", ascending=False)
     nyse_stocks = pd.read_csv(os.path.join(PROJECT_ROOT, "nyse.csv")).sort_values("Market Cap", ascending=False)
     stocks = pd.concat([nasdaq_stocks, nyse_stocks]).sort_values("Market Cap", ascending=False).reset_index().iloc[
@@ -58,7 +58,7 @@ def extract_search_data():
     chunks = [stock_names[i:i + CHUNK_SIZE] for i in range(0, len(stock_names), CHUNK_SIZE)]
 
     if len(chunks) == 0:
-        logger.info("All stocks for current day were already scraped")
+        logger.info("All companies for current day were already scraped")
         return
 
     pytrend = TrendReq(hl='en-US', tz=360, timeout=(10, 25))
