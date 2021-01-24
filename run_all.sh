@@ -3,7 +3,7 @@
 start=`date +%s`
 root_dir=$PWD
 
- Scrape search trends
+# Scrape search trends
 python "social_trends/social_trends.py"
 
 # Scrape etoro
