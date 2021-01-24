@@ -29,7 +29,7 @@ def clean_stock_name(stock_name):
         replace("Series B", "").replace("Holdings", "").replace("Ltd.", "").replace("Class B", ""). \
         replace("Class C", "").replace("Holding", "").replace("Limited", "").replace("Incorporated", ""). \
         replace("Inc", "").replace("Plc", "").replace("plc", "").replace("p.l.c.", "").replace("ADS", ""). \
-        replace("ADR", "").replace("Company", "").replace("& Co.", "").replace("Group", ""). \
+        replace("ADR", "").replace("& Co.", "").replace("Group", ""). \
         replace("Capital Stock", "").replace("Stock", "").replace("PLC", "").replace(".com", "").replace(
         'American   each representing eight  share', "").replace("Wholesale", "").replace("US", "")
     name = re.sub(r"\(.*?\)", "", name)
