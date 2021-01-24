@@ -22,5 +22,5 @@ root_dir=$PWD
 
 DNSCONFIG=/etc/resolv.conf
 if grep -q ec2 "$DNSCONFIG"; then
-  echo bla
+  sudo shutdown now
 fi
