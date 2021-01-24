@@ -46,6 +46,7 @@ def extract_search_data():
     stocks["clean_name"] = stocks["Name"].apply(clean_stock_name)
     stocks = stocks.drop_duplicates(subset="clean_name", inplace=False)
     stock_names = list(zip(stocks["Symbol"], stocks["clean_name"]))
+    stock_names.insert(0, ('GOOG', "Google"))
     chunks = [stock_names[i:i + CHUNK_SIZE] for i in range(0, len(stock_names), CHUNK_SIZE)]
 
     pytrend = TrendReq(hl='en-US', tz=360, timeout=(10, 25))
