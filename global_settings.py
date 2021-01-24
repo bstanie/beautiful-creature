@@ -8,6 +8,8 @@ TOP_N_STOCKS = 1000  # for marketbeat and google trends
 SAVE_EACH_N_ITEMS = 25  # for marketbeat and etoro investor scraper
 ETORO_TOP_N_INVESTORS = 1000  # for etoro investor
 GOOGLE_TRENDS_CHUNK_SIZE = 2  # for google trends
+ALPHAVANTAGE_API_KEY = 'F2050WBAIPD4FC1U'
+FINNHUB_API_KEY = 'c05vlgn48v6v0bd91prg'
 
 logger = logging.root
 sh = logging.StreamHandler()
