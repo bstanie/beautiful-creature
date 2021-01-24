@@ -54,15 +54,15 @@ def extract_search_data():
 
     for idx, chunk in enumerate(tqdm(chunks)):
         try:
-            symbols = [f"{_[0]}" for _ in chunk]
-            search_phrases = [f"{_[1]} stock" for _ in chunk]
+            names = [f"{_[1]}" for _ in chunk]
+            search_phrases = [f"'{_[0]} stock'" for _ in chunk]
             pytrend.build_payload(search_phrases, cat=0, timeframe='today 3-m')
             data = pytrend.interest_over_time()
             if not data.empty:
                 data = data.drop(labels=['isPartial'], axis='columns')
-                data.columns = zip(data.columns, symbols)
+                data.columns = zip(data.columns, names)
                 dataset.append(data)
-            time.sleep(random.randint(3, 8))
+            time.sleep(random.randint(5, 10))
         except Exception as e:
             logger.error(e)
 
