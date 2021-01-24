@@ -43,6 +43,8 @@ def extract_search_data():
     if os.path.exists(file_path):
         with open(file_path, 'r') as f:
             dataset = [pd.read_json(f)]
+            scraped_comp_count = dataset[0].shape[1]
+            logger.info(f"{scraped_comp_count} companies already scraped, {TOP_N_COMPANIES-scraped_comp_count} left")
     logger.info(f"Scraping google trends data for {TOP_N_COMPANIES} top companies")
     nasdaq_stocks = pd.read_csv(os.path.join(PROJECT_ROOT, "nasdaq.csv")).sort_values("Market Cap", ascending=False)
     nyse_stocks = pd.read_csv(os.path.join(PROJECT_ROOT, "nyse.csv")).sort_values("Market Cap", ascending=False)
