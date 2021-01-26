@@ -31,13 +31,15 @@ class EtoroDashboardSpider(scrapy.Spider):
               "lastactivitymax": 30,
               "sort": "-copiers",
               "page": 0,
-              "pagesize": 1000,
+              "pagesize": 100,
               "istestaccount": "false",
               "isfund": "false"}
 
     start_urls = (
         f'https://www.etoro.com/',
     )
+
+    PAGE_COUNT = 0
 
     def start_requests(self):
         for url in self.start_urls:
@@ -66,9 +68,10 @@ class EtoroDashboardSpider(scrapy.Spider):
 
     def parse_with_params(self, driver):
         objs = list()
-        for page in range(1, 99):
+        for page in range(1, 20):
             try:
-                logger.info(f"Scraping page {page}")
+                self.PAGE_COUNT += 1
+                logger.info(f"Scraping page {self.PAGE_COUNT}")
                 self.params["page"] = page
                 param_str = "&".join([f"{k}={v}" for k, v in self.params.items()])
                 url = 'http://www.etoro.com/sapi/rankings/rankings?' + param_str
