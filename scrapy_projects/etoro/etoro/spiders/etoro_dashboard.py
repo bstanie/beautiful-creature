@@ -67,14 +67,17 @@ class EtoroDashboardSpider(scrapy.Spider):
     def parse_with_params(self, driver):
         objs = list()
         for page in range(1, 99):
-            logger.info(f"Scraping page {page}")
-            sleep(2)
-            self.params["page"] = page
-            param_str = "&".join([f"{k}={v}" for k, v in self.params.items()])
-            url = 'http://www.etoro.com/sapi/rankings/rankings?' + param_str
-            driver.get(url)
-            obj = json.loads(re.sub("<.*?>", "", driver.page_source))["Items"]
-            if len(obj) == 0:
-                break
-            objs.extend(obj)
+            try:
+                logger.info(f"Scraping page {page}")
+                self.params["page"] = page
+                param_str = "&".join([f"{k}={v}" for k, v in self.params.items()])
+                url = 'http://www.etoro.com/sapi/rankings/rankings?' + param_str
+                driver.get(url)
+                obj = json.loads(re.sub("<.*?>", "", driver.page_source))["Items"]
+                if len(obj) == 0:
+                    break
+                objs.extend(obj)
+                sleep(5)
+            except Exception as e:
+                logger.error(e)
         return objs
