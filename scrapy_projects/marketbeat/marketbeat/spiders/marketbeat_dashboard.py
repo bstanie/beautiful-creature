@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from io import BytesIO
 
@@ -18,7 +19,7 @@ logger = logging.root
 
 class MarketBeatDashboardSpider(scrapy.Spider):
     name = "marketbeat_dashboard"
-
+    timestamp = datetime.now().strftime("%d-%m-%y")
     TOP_N_COMPANIES = TOP_N_STOCKS
     SAVE_EACH = SAVE_EACH_N_ITEMS
 
@@ -67,10 +68,10 @@ class MarketBeatDashboardSpider(scrapy.Spider):
 
         if len(self.data) % self.SAVE_EACH == 0:
             logger.info(f"Scraped: {len(self.data)} companies. Saving...")
-            with open("marketbeat_dashboard.json", "w") as f:
+            with open(f"marketbeat_dashboard_{self.timestamp}.json", "w") as f:
                 json.dump(self.data, f)
 
         if len(self.data) == self.TOP_N_COMPANIES:
             logger.info(f"Scraped: {len(self.data)} companies. Saving...")
-            with open("marketbeat_dashboard.json", "w") as f:
+            with open(f"marketbeat_dashboard_{self.timestamp}.json", "w") as f:
                 json.dump(self.data, f)
