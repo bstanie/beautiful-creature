@@ -1,11 +1,13 @@
 import json
-import os
-import time
 from datetime import datetime
 
 import scrapy
-from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
 
 import os
 import sys
@@ -16,6 +18,7 @@ sys.path.append(
 from global_settings import SAVE_EACH_N_ITEMS, ETORO_TOP_N_INVESTORS
 
 import logging
+
 logger = logging.root
 
 
@@ -86,7 +89,13 @@ class EtoroInvestorSpider(scrapy.Spider):
         portfolio["datetime"] = datetime.now().strftime("%y-%m-%d")
 
         self.driver.get(response.url)
-        time.sleep(5)
+
+        try:
+            WebDriverWait(self.driver, 5).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".ui-table-row.ng-scope.sell")))
+        except TimeoutException:
+            raise
+
         portfolio_elements = self.driver.find_elements_by_css_selector(".ui-table-row.ng-scope.sell")
         for el in portfolio_elements:
             ticker_data = [_.text for _ in el.find_elements_by_css_selector(".ng-binding")][:-6]
