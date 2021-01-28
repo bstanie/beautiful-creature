@@ -7,7 +7,7 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'enot'
+BOT_NAME = 'ya_enot'
 
 SPIDER_MODULES = ['etoro.spiders']
 NEWSPIDER_MODULE = 'etoro.spiders'
@@ -31,10 +31,10 @@ CRAWLERA_APIKEY = 'e12104d8aa97470caf35d13787d534bd'
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 # RETRY_HTTP_CODES = [512, 540]
-# RETRY_TIMES = 5
+RETRY_TIMES = 3
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 1
+# CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay

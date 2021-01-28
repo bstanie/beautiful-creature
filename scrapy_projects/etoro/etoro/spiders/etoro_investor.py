@@ -1,5 +1,7 @@
 import json
+import time
 from datetime import datetime
+import random
 
 import scrapy
 from selenium.webdriver.firefox.options import Options
@@ -80,8 +82,6 @@ class EtoroInvestorSpider(scrapy.Spider):
 
     def parse(self, response, **kwargs):
 
-        logger.info(f"Scraped items: {len(self.investor_portfolio)} of {self.N_TOP_INVESTORS}")
-
         portfolio = {}
         investor_name = response.url.split("/")[-2]
         portfolio["investor_name"] = investor_name
@@ -91,7 +91,7 @@ class EtoroInvestorSpider(scrapy.Spider):
         self.driver.get(response.url)
 
         try:
-            WebDriverWait(self.driver, 5).until(
+            WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, ".ui-table-row.ng-scope.sell")))
         except TimeoutException:
             raise
@@ -113,6 +113,9 @@ class EtoroInvestorSpider(scrapy.Spider):
             portfolio["items"].append(portfolio_item)
 
         self.investor_portfolio.append(portfolio)
+
+        time.sleep(random.randint(2, 4))
+        logger.info(f"Scraped items: {len(self.investor_portfolio)} of {self.N_TOP_INVESTORS}")
 
         if len(self.investor_portfolio) % self.SAVE_EACH == 0:
             logger.info("Saving results to json")
