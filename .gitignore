@@ -6,3 +6,5 @@ notebooks/.ipynb_checkpoints
 .json
 **/*.log
 **/*.json
+*.txt
+!requirements.txt
