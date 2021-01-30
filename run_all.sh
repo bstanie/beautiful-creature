@@ -16,6 +16,10 @@ cd "${root_dir}/scrapy_projects/marketbeat/marketbeat"
 scrapy crawl marketbeat_price_target
 scrapy crawl marketbeat_dashboard
 
+# Scrape marketwatch
+cd "${root_dir}/scrapy_projects/marketwatch/marketwatch"
+scrapy crawl marketwatch_dashboard
+
 end=`date +%s`
 runtime=$((end-start))
 echo "Execution time ${runtime} sec" >> "${root_dir}/logging.log"
