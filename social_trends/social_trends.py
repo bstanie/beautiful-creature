@@ -17,7 +17,7 @@ sys.path.append(
     os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))))
 
 from global_settings import TOP_N_STOCKS as TOP_N_COMPANIES, GOOGLE_TRENDS_CHUNK_SIZE as CHUNK_SIZE, PROJECT_ROOT, \
-    SAVE_EACH_N_ITEMS
+    SAVE_EACH_N_ITEMS, GOOGLE_TREND_RETRIES
 
 timestamp = datetime.now().strftime("%d-%m-%y")
 file_path = os.path.join(PROJECT_ROOT, "social_trends", f'search_trends_{timestamp}.json')
@@ -64,18 +64,33 @@ def extract_search_data():
     pytrend = TrendReq(hl='en-US', tz=360, timeout=(10, 25))
 
     for idx, chunk in enumerate(tqdm(chunks)):
+        current_retries = 0
         try:
             tickers = [f"{_[0]}" for _ in chunk]
             search_phrases = [f"'{_[0]} stock'" for _ in chunk]
-            pytrend.build_payload(search_phrases, cat=0, timeframe='today 3-m')
+            pytrend.build_payload(search_phrases, cat=0)
             data = pytrend.interest_over_time()
             if not data.empty:
                 data = data.drop(labels=['isPartial'], axis='columns')
                 data.columns = tickers
                 dataset.append(data)
-            time.sleep(random.randint(4, 10))
+            time.sleep(random.randint(2, 10))
         except Exception as e:
-            logger.error(e)
+            current_retries += 1
+            if current_retries <= GOOGLE_TREND_RETRIES:
+                logger.error(e)
+                time.sleep(2**current_retries)
+                tickers = [f"{_[0]}" for _ in chunk]
+                search_phrases = [f"'{_[0]} stock'" for _ in chunk]
+                pytrend.build_payload(search_phrases, cat=0)
+                data = pytrend.interest_over_time()
+                if not data.empty:
+                    data = data.drop(labels=['isPartial'], axis='columns')
+                    data.columns = tickers
+                    dataset.append(data)
+            else:
+                logger.exception("Not successful in scraping Google Trends")
+                break
 
         if idx % SAVE_EACH_N_ITEMS == 0:
             result = pd.concat(dataset, axis=1)
@@ -87,7 +102,6 @@ def extract_search_data():
     logger.info(f"Google trends - scraped {TOP_N_COMPANIES} companies")
     with open(file_path, 'w') as f:
         result.to_json(f)
-
 
 if __name__ == '__main__':
     extract_search_data()
