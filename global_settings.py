@@ -5,10 +5,10 @@ from datetime import datetime
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
-TOP_N_STOCKS = 1000  # for marketbeat and google trends
-SAVE_EACH_N_ITEMS = 25  # for marketbeat, etoro and google trends
-ETORO_TOP_N_INVESTORS = 2000  # for etoro investor
-GOOGLE_TRENDS_CHUNK_SIZE = 3  # for google trends
+TOP_N_STOCKS = 2000  # for marketbeat and google trends
+SAVE_EACH_N_ITEMS = 50  # for marketbeat, etoro and google trends
+ETORO_TOP_N_INVESTORS = 3000  # for etoro investor
+GOOGLE_TRENDS_CHUNK_SIZE = 5  # for google trends
 GOOGLE_TREND_RETRIES = 10
 ALPHAVANTAGE_API_KEY = 'F2050WBAIPD4FC1U'
 FINNHUB_API_KEY = 'c05vlgn48v6v0bd91prg'
