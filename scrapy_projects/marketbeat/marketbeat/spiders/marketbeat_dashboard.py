@@ -67,11 +67,11 @@ class MarketBeatDashboardSpider(scrapy.Spider):
         self.data.append(stock_profile)
 
         if len(self.data) % self.SAVE_EACH == 0:
-            logger.info(f"Scraped: {len(self.data)} companies. Saving...")
+            logger.info(f"Scraped: {len(self.data)} stocks. Saving...")
             with open(f"marketbeat_dashboard_{self.timestamp}.json", "w") as f:
                 json.dump(self.data, f)
 
         if len(self.data) == self.TOP_N_COMPANIES:
-            logger.info(f"Scraped: {len(self.data)} companies. Saving...")
+            logger.info(f"Scraped: {len(self.data)} stocks. Saving...")
             with open(f"marketbeat_dashboard_{self.timestamp}.json", "w") as f:
                 json.dump(self.data, f)

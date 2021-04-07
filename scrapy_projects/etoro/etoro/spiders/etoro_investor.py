@@ -28,7 +28,6 @@ class EtoroInvestorSpider(scrapy.Spider):
     timestamp = datetime.now().strftime("%d-%m-%y")
 
     N_TOP_INVESTORS = ETORO_TOP_N_INVESTORS
-    SAVE_EACH = SAVE_EACH_N_ITEMS
 
     name = "etoro_investor"
     allowed_domains = ["etoro.com"]
@@ -39,7 +38,7 @@ class EtoroInvestorSpider(scrapy.Spider):
 
         profile = webdriver.FirefoxProfile()
         opts = Options()
-        opts.set_headless()
+        opts.headless = True
         profile.set_preference("dom.webdriver.enabled", False)
         profile.set_preference('useAutomationExtension', False)
         profile.set_preference('permissions.default.image', 2)
@@ -51,7 +50,12 @@ class EtoroInvestorSpider(scrapy.Spider):
             executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "geckodriver"),
             firefox_options=opts, firefox_profile=profile)
 
+
     def start_requests(self):
+        yield scrapy.Request("https://www.irk.ru", self.parse)
+
+    def _load_investors(self):
+
 
         scraped_investor_names = []
         dashboard_investor_names = []
@@ -66,6 +70,8 @@ class EtoroInvestorSpider(scrapy.Spider):
                         dashboard_investor_names = dashboard_investor_names[:self.N_TOP_INVESTORS]
                     else:
                         self.N_TOP_INVESTORS = len(dashboard_investor_names)
+        else:
+            logger.error(f"Investor dashboard does not exists for current timestamp: {self.timestamp}")
 
         if os.path.exists(f"investor_portfolio_{self.timestamp}.json"):
             with open(f"investor_portfolio_{self.timestamp}.json", "r") as f:
@@ -75,54 +81,57 @@ class EtoroInvestorSpider(scrapy.Spider):
                     self.investor_portfolio = investor_portfolio
                     scraped_investor_names = [inv["investor_name"] for inv in investor_portfolio]
 
-        start_urls = [f"https://www.etoro.com/people/{inv_name}/portfolio" for inv_name
-                      in dashboard_investor_names if inv_name not in scraped_investor_names]
-        for url in start_urls:
-            yield scrapy.Request(url, self.parse)
+        investors_names = [inv_name for inv_name in dashboard_investor_names if inv_name not in scraped_investor_names]
+        return investors_names
 
     def parse(self, response, **kwargs):
 
-        portfolio = {}
-        investor_name = response.url.split("/")[-2]
-        portfolio["investor_name"] = investor_name
-        portfolio["items"] = []
-        portfolio["datetime"] = datetime.now().strftime("%y-%m-%d")
+        investor_names = self._load_investors()
+        investor_urls = [f"https://www.etoro.com/people/{inv_name}/portfolio" for inv_name in investor_names]
 
-        self.driver.get(response.url)
+        for investor_url in investor_urls:
 
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, ".ui-table-row.ng-scope.sell")))
-        except TimeoutException:
-            raise
+            portfolio = {}
+            investor_name = investor_url.split("/")[-2]
+            portfolio["investor_name"] = investor_name
+            portfolio["items"] = []
+            portfolio["datetime"] = datetime.now().strftime("%y-%m-%d")
 
-        portfolio_elements = self.driver.find_elements_by_css_selector(".ui-table-row.ng-scope.sell")
-        for el in portfolio_elements:
-            ticker_data = [_.text for _ in el.find_elements_by_css_selector(".ng-binding")][:-6]
-            if len(ticker_data) == 6:
-                portfolio_item = {"company_ticker": ticker_data[0], "company_name": ticker_data[1],
-                                  "type": ticker_data[2], "invested": ticker_data[3],
-                                  "profit/loss": ticker_data[4], "value": ticker_data[5]}
-            elif len(ticker_data) == 5:
-                portfolio_item = {"company_ticker": ticker_data[0], "type": ticker_data[1],
-                                  "invested": ticker_data[2],
-                                  "profit/loss": ticker_data[3], "value": ticker_data[4]}
-            else:
-                portfolio_item = {"ERROR": "ERROR"}
+            self.driver.get(investor_url)
 
-            portfolio["items"].append(portfolio_item)
+            try:
+                WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".ui-table-row.ng-scope.sell")))
+            except TimeoutException:
+                raise
 
-        self.investor_portfolio.append(portfolio)
+            portfolio_elements = self.driver.find_elements_by_css_selector(".ui-table-row.ng-scope.sell")
+            for el in portfolio_elements:
+                ticker_data = [_.text for _ in el.find_elements_by_css_selector(".ng-binding")][:-6]
+                if len(ticker_data) == 6:
+                    portfolio_item = {"company_ticker": ticker_data[0], "company_name": ticker_data[1],
+                                      "type": ticker_data[2], "invested": ticker_data[3],
+                                      "profit/loss": ticker_data[4], "value": ticker_data[5]}
+                elif len(ticker_data) == 5:
+                    portfolio_item = {"company_ticker": ticker_data[0], "type": ticker_data[1],
+                                      "invested": ticker_data[2],
+                                      "profit/loss": ticker_data[3], "value": ticker_data[4]}
+                else:
+                    portfolio_item = {"ERROR": "ERROR"}
 
-        time.sleep(random.randint(2, 4))
-        logger.info(f"Scraped items: {len(self.investor_portfolio)} of {self.N_TOP_INVESTORS}")
+                portfolio["items"].append(portfolio_item)
 
-        if len(self.investor_portfolio) % self.SAVE_EACH == 0:
-            logger.info("Saving results to json")
-            with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
-                json.dump(self.investor_portfolio, f)
+            self.investor_portfolio.append(portfolio)
 
-        if len(self.investor_portfolio) == self.N_TOP_INVESTORS:
-            logger.info("Saving final results to json")
-            with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
-                json.dump(self.investor_portfolio, f)
+            time.sleep(random.randint(2, 4))
+            logger.info(f"Scraped investors: {len(self.investor_portfolio)} of {self.N_TOP_INVESTORS}")
+
+            if len(self.investor_portfolio) % SAVE_EACH_N_ITEMS == 0:
+                logger.info("Saving results to json")
+                with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
+                    json.dump(self.investor_portfolio, f)
+
+            if len(self.investor_portfolio) == self.N_TOP_INVESTORS:
+                logger.info("Saving final results to json")
+                with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
+                    json.dump(self.investor_portfolio, f)

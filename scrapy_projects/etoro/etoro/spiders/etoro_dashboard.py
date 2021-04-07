@@ -9,6 +9,9 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
 import logging
+
+from global_settings import ETORO_TOP_N_INVESTORS, SLEEP_TIME
+import requests
 logger = logging.root
 
 
@@ -36,9 +39,8 @@ class EtoroDashboardSpider(scrapy.Spider):
               "isfund": "false"}
 
     start_urls = (
-        f'https://www.etoro.com/',
+        f'https://www.weacom.ru/',
     )
-
     PAGE_COUNT = 0
 
     def start_requests(self):
@@ -49,7 +51,7 @@ class EtoroDashboardSpider(scrapy.Spider):
 
         profile = webdriver.FirefoxProfile()
         opts = Options()
-        opts.set_headless()
+        opts.headless = True
         profile.set_preference("dom.webdriver.enabled", False)
         profile.set_preference('useAutomationExtension', False)
         profile.update_preferences()
@@ -58,29 +60,27 @@ class EtoroDashboardSpider(scrapy.Spider):
             firefox_options=opts, firefox_profile=profile)
 
         objs = self.parse_with_params(driver)
-        self.params["dailyddmin"] = -10
-        self.params["dailyddmax"] = -6
-        objs2 = self.parse_with_params(driver)
-        objs.extend(objs2)
-        # assert len(set([_["CustomerId"] for _ in objs])) == 3000
         with open(f"investor_dashboard_{self.timestamp}.json", "w") as f:
             json.dump(objs, f)
 
     def parse_with_params(self, driver):
         objs = list()
-        for page in range(1, 20):
-            try:
-                self.PAGE_COUNT += 1
-                logger.info(f"Scraping page {self.PAGE_COUNT}")
-                self.params["page"] = page
-                param_str = "&".join([f"{k}={v}" for k, v in self.params.items()])
-                url = 'http://www.etoro.com/sapi/rankings/rankings?' + param_str
-                driver.get(url)
-                obj = json.loads(re.sub("<.*?>", "", driver.page_source))["Items"]
-                if len(obj) == 0:
-                    break
-                objs.extend(obj)
-                sleep(5)
-            except Exception as e:
-                logger.error(e)
+        for page in range(1, 9999):
+                try:
+                    self.PAGE_COUNT += 1
+                    logger.info(f"Scraping page {self.PAGE_COUNT}")
+                    self.params["page"] = page
+                    param_str = "&".join([f"{k}={v}" for k, v in self.params.items()])
+                    url = 'view-source:http://www.etoro.com/sapi/rankings/rankings?' + param_str
+                    driver.get(url)
+                    obj = json.loads(driver.find_element_by_tag_name('pre').text)["Items"]
+                    if len(obj) == 0:
+                        break
+                    objs.extend(obj)
+                    if len(objs) > ETORO_TOP_N_INVESTORS:
+                        objs = objs[:ETORO_TOP_N_INVESTORS]
+                        break
+                    sleep(SLEEP_TIME)
+                except Exception as e:
+                    logger.error(e)
         return objs

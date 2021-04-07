@@ -19,11 +19,6 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy_crawlera.CrawleraMiddleware': 610
 }
 
-# enable crawlera
-CRAWLERA_ENABLED = False
-# the APIkey you get with your subscription
-CRAWLERA_APIKEY = 'e12104d8aa97470caf35d13787d534bd'
-
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = "user-agent=Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 640 XL LTE) AppleWebKit/537.36"
 # " (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10166"

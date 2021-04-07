@@ -20,9 +20,7 @@ sys.path.append(
 from global_settings import TOP_N_STOCKS as TOP_N_COMPANIES, GOOGLE_TRENDS_CHUNK_SIZE as CHUNK_SIZE, PROJECT_ROOT, \
     SAVE_EACH_N_ITEMS
 
-timestamp = datetime.now().strftime("%d-%m-%y")
-file_path = os.path.join(PROJECT_ROOT, "social_trends", f'search_trends_{timestamp}.json')
-
+OUTPUT_FILE_PATH = os.path.join(PROJECT_ROOT, "social_trends", f'search_trends_latest.json')
 
 def clean_stock_name(stock_name):
     name = stock_name.replace('Common Stock', "").replace("Ordinary", ""). \
@@ -42,8 +40,8 @@ def clean_stock_name(stock_name):
 def extract_search_data():
     dataset = []
     logger.info(f"Scraping google trends data for {TOP_N_COMPANIES} top companies")
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as f:
+    if os.path.exists(OUTPUT_FILE_PATH):
+        with open(OUTPUT_FILE_PATH, 'r') as f:
             dataset = [pd.read_json(f)]
             scraped_comp_count = dataset[0].shape[1]
             logger.info(f"{scraped_comp_count} companies already scraped, {TOP_N_COMPANIES - scraped_comp_count} left")
@@ -82,12 +80,12 @@ def extract_search_data():
         if idx % SAVE_EACH_N_ITEMS == 0:
             result = pd.concat(dataset, axis=1)
             logger.info(f"Google trends - scraped {idx * CHUNK_SIZE} companies")
-            with open(file_path, 'w') as f:
+            with open(OUTPUT_FILE_PATH, 'w') as f:
                 result.to_json(f)
 
     result = pd.concat(dataset, axis=1)
     logger.info(f"Google trends - scraped {TOP_N_COMPANIES} companies")
-    with open(file_path, 'w') as f:
+    with open(OUTPUT_FILE_PATH, 'w') as f:
         result.to_json(f)
 
 
