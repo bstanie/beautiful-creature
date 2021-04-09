@@ -5,12 +5,12 @@ from datetime import datetime
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
-# Scrapy and selenium settings
+# Scrapy settings
 
-TOP_N_STOCKS = 1000  # for marketbeat, marketwatch and google trends scrapers
-ETORO_TOP_N_INVESTORS = 500  # for etoro scrapers
-
-SAVE_EACH_N_ITEMS = 10  # save results periodically to DB
+# TOP_N_STOCKS = 500  # for marketbeat, marketwatch and google trends scrapers
+# ETORO_TOP_N_INVESTORS = 200  # for etoro scrapers
+#
+# SAVE_EACH_N_ITEMS = 20  # save results periodically to DB
 
 # Google trends settings
 

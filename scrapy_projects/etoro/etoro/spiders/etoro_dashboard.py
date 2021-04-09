@@ -10,9 +10,12 @@ from selenium.webdriver.firefox.options import Options
 
 import logging
 
-from global_settings import ETORO_TOP_N_INVESTORS, SLEEP_TIME
 import requests
+
 logger = logging.root
+
+ETORO_TOP_N_INVESTORS = 200
+SLEEP_TIME = 5
 
 
 class EtoroDashboardSpider(scrapy.Spider):
@@ -66,21 +69,21 @@ class EtoroDashboardSpider(scrapy.Spider):
     def parse_with_params(self, driver):
         objs = list()
         for page in range(1, 9999):
-                try:
-                    self.PAGE_COUNT += 1
-                    logger.info(f"Scraping page {self.PAGE_COUNT}")
-                    self.params["page"] = page
-                    param_str = "&".join([f"{k}={v}" for k, v in self.params.items()])
-                    url = 'view-source:http://www.etoro.com/sapi/rankings/rankings?' + param_str
-                    driver.get(url)
-                    obj = json.loads(driver.find_element_by_tag_name('pre').text)["Items"]
-                    if len(obj) == 0:
-                        break
-                    objs.extend(obj)
-                    if len(objs) > ETORO_TOP_N_INVESTORS:
-                        objs = objs[:ETORO_TOP_N_INVESTORS]
-                        break
-                    sleep(SLEEP_TIME)
-                except Exception as e:
-                    logger.error(e)
+            try:
+                self.PAGE_COUNT += 1
+                logger.info(f"Scraping page {self.PAGE_COUNT}")
+                self.params["page"] = page
+                param_str = "&".join([f"{k}={v}" for k, v in self.params.items()])
+                url = 'view-source:http://www.etoro.com/sapi/rankings/rankings?' + param_str
+                driver.get(url)
+                obj = json.loads(driver.find_element_by_tag_name('pre').text)["Items"]
+                if len(obj) == 0:
+                    break
+                objs.extend(obj)
+                if len(objs) > ETORO_TOP_N_INVESTORS:
+                    objs = objs[:ETORO_TOP_N_INVESTORS]
+                    break
+                sleep(SLEEP_TIME)
+            except Exception as e:
+                logger.error(e)
         return objs

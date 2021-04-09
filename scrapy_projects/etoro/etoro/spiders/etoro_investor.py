@@ -17,7 +17,8 @@ import sys
 sys.path.append(
     os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))))
 
-from global_settings import SAVE_EACH_N_ITEMS, ETORO_TOP_N_INVESTORS
+ETORO_TOP_N_INVESTORS = 200
+SAVE_EACH_N_ITEMS = 5
 
 import logging
 
@@ -52,10 +53,9 @@ class EtoroInvestorSpider(scrapy.Spider):
 
 
     def start_requests(self):
-        yield scrapy.Request("https://www.irk.ru", self.parse)
+        yield scrapy.Request("https://www.aeroflot.ru", self.parse)
 
     def _load_investors(self):
-
 
         scraped_investor_names = []
         dashboard_investor_names = []
