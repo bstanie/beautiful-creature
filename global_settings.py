@@ -7,10 +7,10 @@ PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 # Scrapy settings
 
-TOP_N_STOCKS = 100  # for marketbeat, marketwatch and google trends
-ETORO_TOP_N_INVESTORS = 100  # for etoro scrapers
+TOP_N_STOCKS = 500  # for marketbeat, and google trends
+ETORO_TOP_N_INVESTORS = 200  # for etoro scrapers
 
-SAVE_EACH_N_ITEMS = 10  # save results periodically to DB
+SAVE_EACH_N_ITEMS = 10  # save results periodically
 
 # Google trends settings
 
