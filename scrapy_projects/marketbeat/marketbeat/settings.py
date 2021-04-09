@@ -9,10 +9,10 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'marketbeat'
+BOT_NAME = 'enot'
 
-SPIDER_MODULES = ['marketbeat.spiders']
-NEWSPIDER_MODULE = 'marketbeat.spiders'
+SPIDER_MODULES = ['scrapy_projects.marketbeat.marketnbeat.spiders']
+NEWSPIDER_MODULE = 'scrapy_projects.marketbeat.marketbeat.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent

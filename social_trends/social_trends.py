@@ -20,7 +20,8 @@ sys.path.append(
 from global_settings import TOP_N_STOCKS as TOP_N_COMPANIES, GOOGLE_TRENDS_CHUNK_SIZE as CHUNK_SIZE, PROJECT_ROOT, \
     SAVE_EACH_N_ITEMS
 
-OUTPUT_FILE_PATH = os.path.join(PROJECT_ROOT, "social_trends", f'search_trends_latest.json')
+timestamp = datetime.now().strftime("%d-%m-%y")
+OUTPUT_FILE_PATH = os.path.join(PROJECT_ROOT, f'search_trends_{timestamp}.json')
 
 def clean_stock_name(stock_name):
     name = stock_name.replace('Common Stock', "").replace("Ordinary", ""). \

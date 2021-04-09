@@ -7,10 +7,10 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'ya_enot'
+BOT_NAME = 'enot'
 
-SPIDER_MODULES = ['etoro.spiders']
-NEWSPIDER_MODULE = 'etoro.spiders'
+SPIDER_MODULES = ['scrapy_projects.etoro.etoro.spiders']
+NEWSPIDER_MODULE = 'scrapy_projects.etoro.etoro.spiders'
 
 DUPEFILTER_CLASS = 'scrapyjs.SplashAwareDupeFilter'
 
@@ -71,9 +71,9 @@ RETRY_TIMES = 3
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-   'etoro.pipelines.EtoroPipeline': 300,
-}
+# ITEM_PIPELINES = {
+#    'etoro.pipelines.EtoroPipeline': 300,
+# }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

@@ -12,10 +12,9 @@ import logging
 
 import requests
 
-logger = logging.root
+from global_settings import ETORO_TOP_N_INVESTORS, SLEEP_TIME
 
-ETORO_TOP_N_INVESTORS = 200
-SLEEP_TIME = 5
+logger = logging.root
 
 
 class EtoroDashboardSpider(scrapy.Spider):

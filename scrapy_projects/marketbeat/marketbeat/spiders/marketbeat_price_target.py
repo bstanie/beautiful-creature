@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from io import BytesIO
 
@@ -21,6 +22,7 @@ class MarketBeatPriceTargetSpider(scrapy.Spider):
     name = "marketbeat_price_target"
     allowed_domains = ["marketbeat.com"]
 
+    timestamp = datetime.now().strftime("%d-%m-%y")
 
     TOP_N_COMPANIES = TOP_N_STOCKS
     SAVE_EACH = SAVE_EACH_N_ITEMS
@@ -58,10 +60,10 @@ class MarketBeatPriceTargetSpider(scrapy.Spider):
 
         if len(self.price_target) % self.SAVE_EACH == 0:
             logger.info(f"Scraped: {len(self.price_target)} stocks. Saving...")
-            with open("marketbeat_price_target.json", "w") as f:
+            with open(f"marketbeat_price_target_{self.timestamp}.json", "w") as f:
                 json.dump(self.price_target, f)
 
         if len(self.price_target) % self.TOP_N_COMPANIES == 0:
             logger.info(f"Scraped: {len(self.price_target)} stocks. Saving...")
-            with open("marketbeat_price_target.json", "w") as f:
+            with open(f"marketbeat_price_target_{self.timestamp}.json", "w") as f:
                 json.dump(self.price_target, f)
