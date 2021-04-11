@@ -14,13 +14,13 @@ class Scraper:
         settings_file_path = 'scrapy_projects.etoro.etoro.settings'  # The path seen from root, ie. from main.py
         os.environ.setdefault('SCRAPY_SETTINGS_MODULE', settings_file_path)
         self.process = CrawlerProcess()
-        self.spider = EtoroDashboardSpider  # The spider you want to crawl# The spider you want to crawl
+        self.spider1 = EtoroDashboardSpider  # The spider you want to crawl# The spider you want to crawl
         self.spider2 = EtoroInvestorSpider
         self.spider3 = MarketBeatDashboardSpider
         self.spider4 = MarketBeatPriceTargetSpider
 
     def run_spiders(self):
-        self.process.crawl(self.spider)
+        self.process.crawl(self.spider1)
         self.process.crawl(self.spider2)
         self.process.crawl(self.spider3)
         self.process.crawl(self.spider4)
@@ -30,5 +30,4 @@ class Scraper:
 
 scraper = Scraper()
 scraper.run_spiders()
-
 extract_search_data()
