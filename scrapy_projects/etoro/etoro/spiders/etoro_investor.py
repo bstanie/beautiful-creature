@@ -2,6 +2,7 @@ import json
 import time
 from datetime import datetime
 import random
+from pathlib import Path
 
 import scrapy
 from selenium.webdriver.firefox.options import Options
@@ -10,24 +11,22 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-
+import logging
 import os
 import sys
-
-from global_settings import ETORO_TOP_N_INVESTORS, SAVE_EACH_N_ITEMS
 
 sys.path.append(
     os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))))
 
-import logging
-
 logger = logging.root
+
+settings = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "settings.json", "rb"))
+N_TOP_INVESTORS = settings["etoro_top_n_investors"]
+SAVE_EVERY = settings["persist_every"]
 
 
 class EtoroInvestorSpider(scrapy.Spider):
     timestamp = datetime.now().strftime("%d-%m-%y")
-
-    N_TOP_INVESTORS = ETORO_TOP_N_INVESTORS
 
     name = "etoro_investor"
     allowed_domains = ["etoro.com"]
@@ -49,7 +48,6 @@ class EtoroInvestorSpider(scrapy.Spider):
         self.driver = webdriver.Firefox(
             executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "geckodriver"),
             firefox_options=opts, firefox_profile=profile)
-
 
     def start_requests(self):
         yield scrapy.Request("https://www.irk.ru", self.parse)
@@ -125,12 +123,13 @@ class EtoroInvestorSpider(scrapy.Spider):
             time.sleep(random.randint(2, 4))
             logger.info(f"Scraped investors: {len(self.investor_portfolio)} of {self.N_TOP_INVESTORS}")
 
-            if len(self.investor_portfolio) % SAVE_EACH_N_ITEMS == 0:
-                logger.info("Saving results to json")
-                with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
-                    json.dump(self.investor_portfolio, f)
-
-            if len(self.investor_portfolio) == self.N_TOP_INVESTORS:
-                logger.info("Saving final results to json")
-                with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
-                    json.dump(self.investor_portfolio, f)
+            return self.investor_portfolio
+            # if len(self.investor_portfolio) % SAVE_EVERY == 0:
+            #     logger.info("Saving results to json")
+            #     with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
+            #         json.dump(self.investor_portfolio, f)
+            #
+            # if len(self.investor_portfolio) == self.N_TOP_INVESTORS:
+            #     logger.info("Saving final results to json")
+            #     with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
+            #         json.dump(self.investor_portfolio, f)

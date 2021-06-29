@@ -1,20 +1,17 @@
 import json
 import os
-import re
 from datetime import datetime
 from time import sleep
-
 import scrapy
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
-
 import logging
-
-import requests
-
-from global_settings import ETORO_TOP_N_INVESTORS, SLEEP_TIME
+from pathlib import Path
 
 logger = logging.root
+settings = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "settings.json", "rb"))
+ETORO_TOP_N_INVESTORS = settings["etoro_top_n_investors"]
+SLEEP_TIME = settings["sleep_time"]
 
 
 class EtoroDashboardSpider(scrapy.Spider):
@@ -62,8 +59,9 @@ class EtoroDashboardSpider(scrapy.Spider):
             firefox_options=opts, firefox_profile=profile)
 
         objs = self.parse_with_params(driver)
-        with open(f"investor_dashboard_{self.timestamp}.json", "w") as f:
-            json.dump(objs, f)
+
+        for obj in objs:
+            yield obj
 
     def parse_with_params(self, driver):
         objs = list()

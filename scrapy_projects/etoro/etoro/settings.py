@@ -9,8 +9,8 @@
 
 BOT_NAME = 'enot'
 
-SPIDER_MODULES = ['scrapy_projects.etoro.etoro.spiders']
-NEWSPIDER_MODULE = 'scrapy_projects.etoro.etoro.spiders'
+SPIDER_MODULES = ['etoro.spiders']
+NEWSPIDER_MODULE = 'etoro.spiders'
 
 DUPEFILTER_CLASS = 'scrapyjs.SplashAwareDupeFilter'
 
@@ -71,9 +71,14 @@ RETRY_TIMES = 3
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    'etoro.pipelines.EtoroPipeline': 300,
-# }
+ITEM_PIPELINES = {
+   'etoro.pipelines.EtoroDashboardPipeline': 300,
+}
+
+MONGODB_SERVER = "localhost"
+MONGODB_PORT = 27017
+MONGODB_DB = "beautiful_creature"
+MONGODB_COLLECTION = "investors"
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
