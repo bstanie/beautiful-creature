@@ -20,7 +20,7 @@ sys.path.append(
 
 logger = logging.root
 
-settings = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "settings.json", "rb"))
+settings = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "config.json", "rb"))
 N_TOP_INVESTORS = settings["etoro_top_n_investors"]
 SAVE_EVERY = settings["persist_every"]
 

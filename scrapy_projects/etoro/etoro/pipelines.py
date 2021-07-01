@@ -25,18 +25,9 @@ class EtoroDashboardPipeline:
             settings['MONGODB_PORT']
         )
         db = connection[settings['MONGODB_DB']]
-        self.collection = db[settings['MONGODB_COLLECTION']]
-
-    # def open_spider(self, spider):
-    #     self.file = open('investor_dashboard.json', 'w')
-    #
-    # def close_spider(self, spider):
-    #     self.file.close()
-
-    # def process_item(self, item, spider):
-    #     line = json.dumps(ItemAdapter(item).asdict()) + "\n"
-    #     self.file.write(line)
-    #     return item
+        collection_name = db[settings['MONGODB_COLLECTION']]
+        db.drop_collection(collection_name)
+        self.collection = collection_name
 
     def process_item(self, item, spider):
         valid = True

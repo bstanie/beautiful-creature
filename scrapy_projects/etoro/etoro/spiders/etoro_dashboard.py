@@ -9,7 +9,7 @@ import logging
 from pathlib import Path
 
 logger = logging.root
-settings = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "settings.json", "rb"))
+settings = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "config.json", "rb"))
 ETORO_TOP_N_INVESTORS = settings["etoro_top_n_investors"]
 SLEEP_TIME = settings["sleep_time"]
 
