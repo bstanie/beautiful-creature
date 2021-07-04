@@ -59,7 +59,6 @@ class EtoroDashboardSpider(scrapy.Spider):
             firefox_options=opts, firefox_profile=profile)
 
         objs = self.parse_with_params(driver)
-
         for obj in objs:
             yield obj
 

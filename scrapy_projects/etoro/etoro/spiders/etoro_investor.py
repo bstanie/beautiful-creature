@@ -28,75 +28,77 @@ N_TOP_INVESTORS = config["etoro_top_n_investors"]
 SAVE_EVERY = config["persist_every"]
 settings = get_project_settings()
 
+
 class EtoroInvestorSpider(scrapy.Spider):
     timestamp = datetime.now().strftime("%d-%m-%y")
-
     name = "etoro_investor"
     allowed_domains = ["etoro.com"]
+
+    custom_settings = {
+        'AUTOTHROTTLE_ENABLED': True,
+        'AUTOTHROTTLE_DEBUG': True,
+        'DOWNLOAD_DELAY': 1,
+        'DEPTH_LIMIT': 1,
+    }
+
+    connection = pymongo.MongoClient(
+        settings['MONGODB_SERVER'],
+        settings['MONGODB_PORT']
+    )
 
     def __init__(self, name=None, **kwargs):
         super().__init__(name, **kwargs)
         self.investor_portfolio = []
 
-        profile = webdriver.FirefoxProfile()
-        opts = Options()
-        opts.headless = False
-        profile.set_preference("dom.webdriver.enabled", False)
-        profile.set_preference('useAutomationExtension', False)
-        # profile.set_preference('permissions.default.image', 2)
-        # profile.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
-        desired = DesiredCapabilities.FIREFOX
-        profile.update_preferences()
+        import undetected_chromedriver.v2 as uc
+        options = uc.ChromeOptions()
+        options.add_argument('--no-first-run --no-sandbox --no-service-autorun --password-store=basic')
+        self.driver = uc.Chrome(options=options)
 
-        self.driver = webdriver.Firefox(
-            executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "geckodriver"),
-            firefox_options=opts, firefox_profile=profile, desired_capabilities=desired)
+        # profile = webdriver.FirefoxProfile()
+        # opts = Options()
+        # opts.headless = False
+        # profile.set_preference("dom.webdriver.enabled", False)
+        # profile.set_preference('useAutomationExtension', False)
+        # # profile.set_preference('permissions.default.image', 2)
+        # # profile.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
+        # desired = DesiredCapabilities.FIREFOX
+        # profile.update_preferences()
+        #
+        # self.driver = webdriver.Firefox(
+        #     executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "geckodriver"),
+        #     firefox_options=opts, firefox_profile=profile, desired_capabilities=desired)
 
     def start_requests(self):
         yield scrapy.Request("https://www.irk.ru", self.parse)
 
+    def _load_scraped_investors(self):
+
+        collection_name = f"{settings['MONGODB_PORTFOLIO_COLLECTION']}_{self.timestamp}"
+        db = self.connection[settings['MONGODB_DB']]
+        collection = db[collection_name]
+
+        cursor = collection.find({})
+        scraped_investors = [usr["investor_name"] for usr in cursor]
+        assert len(scraped_investors) == len(set(scraped_investors))
+        return scraped_investors
+
     def _load_investors(self):
 
-        scraped_investor_names = []
-        dashboard_investor_names = []
+        collection_name = f"{settings['MONGODB_INVESTOR_COLLECTION']}_{self.timestamp}"
+        db = self.connection[settings['MONGODB_DB']]
+        collection = db[collection_name]
 
-        # if os.path.exists(f"investor_dashboard_{self.timestamp}.json"):
-        #     with open(f"investor_dashboard_{self.timestamp}.json", "r") as f:
-        #         if len(f.read()) != 0:
-        #             f.seek(0)
-        #             investors = json.load(f)
-        #             dashboard_investor_names = [inv["UserName"].lower() for inv in investors]
-        #             if self.N_TOP_INVESTORS <= len(dashboard_investor_names):
-        #                 dashboard_investor_names = dashboard_investor_names[:self.N_TOP_INVESTORS]
-        #             else:
-        #                 self.N_TOP_INVESTORS = len(dashboard_investor_names)
-        # else:
-        #     logger.error(f"Investor dashboard does not exists for current timestamp: {self.timestamp}")
-        #
-        # if os.path.exists(f"investor_portfolio_{self.timestamp}.json"):
-        #     with open(f"investor_portfolio_{self.timestamp}.json", "r") as f:
-        #         if len(f.read()) != 0:
-        #             f.seek(0)
-        #             investor_portfolio = json.load(f)
-        #             self.investor_portfolio = investor_portfolio
-        #             scraped_investor_names = [inv["investor_name"] for inv in investor_portfolio]
-        #
-        # investors_names = [inv_name for inv_name in dashboard_investor_names if inv_name not in scraped_investor_names]
-        # return investors_names
-
-        connection = pymongo.MongoClient(
-            settings['MONGODB_SERVER'],
-            settings['MONGODB_PORT']
-        )
-        db = connection[settings['MONGODB_DB']]
-        collection = db[settings["MONGODB_INVESTOR_COLLECTION"]]
         cursor = collection.find({})
         all_investors = [usr["UserName"] for usr in cursor]
         return all_investors
 
     def parse(self, response, **kwargs):
 
-        investor_names = self._load_investors()
+        all_investor_names = self._load_investors()
+        scraped_investor_names = self._load_scraped_investors()
+        investor_names = [name for name in all_investor_names if name not in scraped_investor_names]
+        print(investor_names)
         investor_urls = [f"https://www.etoro.com/people/{inv_name}/portfolio" for inv_name in investor_names]
 
         for investor_url in investor_urls:
@@ -107,7 +109,8 @@ class EtoroInvestorSpider(scrapy.Spider):
             portfolio["items"] = []
             portfolio["datetime"] = datetime.now().strftime("%y-%m-%d")
 
-            self.driver.get(investor_url)
+            with self.driver:
+                self.driver.get(investor_url)
             try:
                 WebDriverWait(self.driver, 10).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, ".ui-table-row.ng-scope.sell")))
@@ -130,18 +133,4 @@ class EtoroInvestorSpider(scrapy.Spider):
 
                 portfolio["items"].append(portfolio_item)
 
-            self.investor_portfolio.append(portfolio)
-
-            time.sleep(random.randint(2, 4))
-            logger.info(f"Scraped investors: {len(self.investor_portfolio)} of {self.N_TOP_INVESTORS}")
-
-            return self.investor_portfolio
-            # if len(self.investor_portfolio) % SAVE_EVERY == 0:
-            #     logger.info("Saving results to json")
-            #     with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
-            #         json.dump(self.investor_portfolio, f)
-            #
-            # if len(self.investor_portfolio) == self.N_TOP_INVESTORS:
-            #     logger.info("Saving final results to json")
-            #     with open(f"investor_portfolio_{self.timestamp}.json", 'w') as f:
-            #         json.dump(self.investor_portfolio, f)
+            yield portfolio
