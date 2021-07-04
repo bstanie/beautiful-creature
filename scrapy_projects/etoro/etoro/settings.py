@@ -7,7 +7,7 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'enot'
+BOT_NAME = 'walla'
 
 SPIDER_MODULES = ['etoro.spiders']
 NEWSPIDER_MODULE = 'etoro.spiders'
@@ -78,7 +78,8 @@ ITEM_PIPELINES = {
 MONGODB_SERVER = "localhost"
 MONGODB_PORT = 27017
 MONGODB_DB = "beautiful_creature"
-MONGODB_COLLECTION = "investors"
+MONGODB_INVESTOR_COLLECTION = "investors"
+MONGODB_PORTFOLIO_COLLECTION = "portfolios"
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

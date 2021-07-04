@@ -4,7 +4,10 @@ from datetime import datetime
 import random
 from pathlib import Path
 
+import pymongo
 import scrapy
+from scrapy.utils.project import get_project_settings
+from selenium.webdriver import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -20,10 +23,10 @@ sys.path.append(
 
 logger = logging.root
 
-settings = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "config.json", "rb"))
-N_TOP_INVESTORS = settings["etoro_top_n_investors"]
-SAVE_EVERY = settings["persist_every"]
-
+config = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "config.json", "rb"))
+N_TOP_INVESTORS = config["etoro_top_n_investors"]
+SAVE_EVERY = config["persist_every"]
+settings = get_project_settings()
 
 class EtoroInvestorSpider(scrapy.Spider):
     timestamp = datetime.now().strftime("%d-%m-%y")
@@ -37,17 +40,17 @@ class EtoroInvestorSpider(scrapy.Spider):
 
         profile = webdriver.FirefoxProfile()
         opts = Options()
-        opts.headless = True
+        opts.headless = False
         profile.set_preference("dom.webdriver.enabled", False)
         profile.set_preference('useAutomationExtension', False)
-        profile.set_preference('permissions.default.image', 2)
-        profile.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
-
+        # profile.set_preference('permissions.default.image', 2)
+        # profile.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
+        desired = DesiredCapabilities.FIREFOX
         profile.update_preferences()
 
         self.driver = webdriver.Firefox(
             executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "geckodriver"),
-            firefox_options=opts, firefox_profile=profile)
+            firefox_options=opts, firefox_profile=profile, desired_capabilities=desired)
 
     def start_requests(self):
         yield scrapy.Request("https://www.irk.ru", self.parse)
@@ -57,29 +60,39 @@ class EtoroInvestorSpider(scrapy.Spider):
         scraped_investor_names = []
         dashboard_investor_names = []
 
-        if os.path.exists(f"investor_dashboard_{self.timestamp}.json"):
-            with open(f"investor_dashboard_{self.timestamp}.json", "r") as f:
-                if len(f.read()) != 0:
-                    f.seek(0)
-                    investors = json.load(f)
-                    dashboard_investor_names = [inv["UserName"].lower() for inv in investors]
-                    if self.N_TOP_INVESTORS <= len(dashboard_investor_names):
-                        dashboard_investor_names = dashboard_investor_names[:self.N_TOP_INVESTORS]
-                    else:
-                        self.N_TOP_INVESTORS = len(dashboard_investor_names)
-        else:
-            logger.error(f"Investor dashboard does not exists for current timestamp: {self.timestamp}")
+        # if os.path.exists(f"investor_dashboard_{self.timestamp}.json"):
+        #     with open(f"investor_dashboard_{self.timestamp}.json", "r") as f:
+        #         if len(f.read()) != 0:
+        #             f.seek(0)
+        #             investors = json.load(f)
+        #             dashboard_investor_names = [inv["UserName"].lower() for inv in investors]
+        #             if self.N_TOP_INVESTORS <= len(dashboard_investor_names):
+        #                 dashboard_investor_names = dashboard_investor_names[:self.N_TOP_INVESTORS]
+        #             else:
+        #                 self.N_TOP_INVESTORS = len(dashboard_investor_names)
+        # else:
+        #     logger.error(f"Investor dashboard does not exists for current timestamp: {self.timestamp}")
+        #
+        # if os.path.exists(f"investor_portfolio_{self.timestamp}.json"):
+        #     with open(f"investor_portfolio_{self.timestamp}.json", "r") as f:
+        #         if len(f.read()) != 0:
+        #             f.seek(0)
+        #             investor_portfolio = json.load(f)
+        #             self.investor_portfolio = investor_portfolio
+        #             scraped_investor_names = [inv["investor_name"] for inv in investor_portfolio]
+        #
+        # investors_names = [inv_name for inv_name in dashboard_investor_names if inv_name not in scraped_investor_names]
+        # return investors_names
 
-        if os.path.exists(f"investor_portfolio_{self.timestamp}.json"):
-            with open(f"investor_portfolio_{self.timestamp}.json", "r") as f:
-                if len(f.read()) != 0:
-                    f.seek(0)
-                    investor_portfolio = json.load(f)
-                    self.investor_portfolio = investor_portfolio
-                    scraped_investor_names = [inv["investor_name"] for inv in investor_portfolio]
-
-        investors_names = [inv_name for inv_name in dashboard_investor_names if inv_name not in scraped_investor_names]
-        return investors_names
+        connection = pymongo.MongoClient(
+            settings['MONGODB_SERVER'],
+            settings['MONGODB_PORT']
+        )
+        db = connection[settings['MONGODB_DB']]
+        collection = db[settings["MONGODB_INVESTOR_COLLECTION"]]
+        cursor = collection.find({})
+        all_investors = [usr["UserName"] for usr in cursor]
+        return all_investors
 
     def parse(self, response, **kwargs):
 
@@ -95,7 +108,6 @@ class EtoroInvestorSpider(scrapy.Spider):
             portfolio["datetime"] = datetime.now().strftime("%y-%m-%d")
 
             self.driver.get(investor_url)
-
             try:
                 WebDriverWait(self.driver, 10).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, ".ui-table-row.ng-scope.sell")))

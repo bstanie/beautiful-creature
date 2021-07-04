@@ -9,9 +9,9 @@ import logging
 from pathlib import Path
 
 logger = logging.root
-settings = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "config.json", "rb"))
-ETORO_TOP_N_INVESTORS = settings["etoro_top_n_investors"]
-SLEEP_TIME = settings["sleep_time"]
+config = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "config.json", "rb"))
+ETORO_TOP_N_INVESTORS = config["etoro_top_n_investors"]
+SLEEP_TIME = config["sleep_time"]
 
 
 class EtoroDashboardSpider(scrapy.Spider):
@@ -38,7 +38,7 @@ class EtoroDashboardSpider(scrapy.Spider):
               "isfund": "false"}
 
     start_urls = (
-        f'https://www.weacom.ru/',
+        f'https://www.irk.ru/',
     )
     PAGE_COUNT = 0
 
