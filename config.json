@@ -1,5 +1,5 @@
 {
   "sleep_time": 5,
-  "etoro_top_n_investors": 10,
+  "etoro_top_n_investors": 100,
   "persist_every": 10
 }

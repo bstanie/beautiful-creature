@@ -5,15 +5,15 @@
 
 
 # useful for handling different item types with a single interface
-
+import json
 from datetime import datetime
+from pathlib import Path
 
 import pymongo
 from scrapy.exceptions import DropItem
 from scrapy.utils.project import get_project_settings
 
 settings = get_project_settings()
-
 
 class EtoroDashboardPipeline:
     timestamp = datetime.now().strftime("%d-%m-%y")
