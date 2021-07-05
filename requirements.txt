@@ -18,4 +18,8 @@ tensorboard==2.4.0
 pytrends==4.7.3
 boto3==1.16.58
 pymongo
-
+python-binance
+tqdm
+jupyter
+plotly
+statsmodels

@@ -1,5 +1,9 @@
 {
   "sleep_time": 5,
   "etoro_top_n_investors": 150,
-  "persist_every": 10
+  "persist_every": 10,
+  "cryptos": [
+    "Ripple",
+    "Cardano"
+  ]
 }
