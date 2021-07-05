@@ -4,6 +4,15 @@
   "persist_every": 10,
   "cryptos": [
     "Ripple",
-    "Cardano"
+    "Cardano",
+    "Ethereum",
+    "BNB",
+    "Dogecoin",
+    "Polkadot",
+    "Litecoin",
+    "Solana",
+    "VeChain",
+    "FileCoin",
+    "Monero"
   ]
 }
