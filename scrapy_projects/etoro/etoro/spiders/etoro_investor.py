@@ -1,15 +1,9 @@
 import json
-import time
 from datetime import datetime
-import random
 from pathlib import Path
-
 import pymongo
 import scrapy
 from scrapy.utils.project import get_project_settings
-from selenium.webdriver import DesiredCapabilities
-from selenium.webdriver.firefox.options import Options
-from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -55,20 +49,6 @@ class EtoroInvestorSpider(scrapy.Spider):
         options.add_argument('--no-first-run --no-sandbox --no-service-autorun --password-store=basic')
         self.driver = uc.Chrome(options=options)
 
-        # profile = webdriver.FirefoxProfile()
-        # opts = Options()
-        # opts.headless = False
-        # profile.set_preference("dom.webdriver.enabled", False)
-        # profile.set_preference('useAutomationExtension', False)
-        # # profile.set_preference('permissions.default.image', 2)
-        # # profile.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
-        # desired = DesiredCapabilities.FIREFOX
-        # profile.update_preferences()
-        #
-        # self.driver = webdriver.Firefox(
-        #     executable_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), "geckodriver"),
-        #     firefox_options=opts, firefox_profile=profile, desired_capabilities=desired)
-
     def start_requests(self):
         yield scrapy.Request("https://www.irk.ru", self.parse)
 
@@ -80,7 +60,6 @@ class EtoroInvestorSpider(scrapy.Spider):
 
         cursor = collection.find({})
         scraped_investors = [usr["investor_name"] for usr in cursor]
-        assert len(scraped_investors) == len(set(scraped_investors))
         return scraped_investors
 
     def _load_investors(self):
