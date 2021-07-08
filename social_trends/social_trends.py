@@ -19,8 +19,7 @@ logger = logging.root
 sys.path.append(
     os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))))
 
-TIMESTAMP = datetime.now().strftime("%d-%m-%y")
-OUTPUT_FILE_PATH = os.path.join(PROJECT_ROOT, f'search_trends_{TIMESTAMP}.json')
+OUTPUT_FILE_PATH = os.path.join(PROJECT_ROOT, f'search_trends.json')
 
 with open(pathlib.Path.cwd().parent / "config.json", "r") as f:
     KEYWORDS = json.load(f)["cryptos"]
@@ -51,8 +50,8 @@ def extract_search_data(keywords):
 
     for idx, keyword in tqdm(enumerate(tqdm(keywords))):
         try:
-            data = pytrend.get_historical_interest([keyword], year_start=2021, month_start=5,
-                                                   day_start=1, hour_start=0, year_end=2021,
+            data = pytrend.get_historical_interest([keyword], year_start=2021, month_start=6,
+                                                   day_start=26, hour_start=0, year_end=2021,
                                                    month_end=7, day_end=9, sleep=2)
             if not data.empty:
                 data = data.drop(labels=['isPartial'], axis='columns')
@@ -70,4 +69,4 @@ def extract_search_data(keywords):
 
 
 if __name__ == '__main__':
-    extract_search_data(KEYWORDS[:1])
+    extract_search_data(KEYWORDS)
