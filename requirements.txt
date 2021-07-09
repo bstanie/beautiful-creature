@@ -20,3 +20,4 @@ statsmodels
 torch
 transformers
 undetected_chromedriver
+langdetect

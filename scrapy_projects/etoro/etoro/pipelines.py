@@ -30,12 +30,12 @@ class EtoroDashboardPipeline:
         self.portfolio_collection = db[portfolio_collection_name]
 
     def process_item(self, item, spider):
-        if spider.name == "etoro_dashboard":
+        if spider.name == "etoro_investor":
             for data in item:
                 if not data:
                     raise DropItem("Missing {0}!".format(data))
                 self.investor_collection.insert(dict(item))
                 return item
-        elif spider.name == "etoro_investor":
+        elif spider.name == "etoro_portfolio":
             self.portfolio_collection.insert(dict(item))
             return item
