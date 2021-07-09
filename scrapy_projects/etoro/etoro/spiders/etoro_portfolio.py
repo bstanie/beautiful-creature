@@ -46,7 +46,7 @@ class EtoroPortfolioSpider(scrapy.Spider):
         super().__init__(name, **kwargs)
         self.investor_portfolio = []
         options = uc.ChromeOptions()
-        options.headless = True
+        # options.headless = True
         options.add_argument('--no-first-run --no-sandbox --no-service-autorun --password-store=basic')
         self.driver = uc.Chrome(options=options)
 
@@ -90,12 +90,11 @@ class EtoroPortfolioSpider(scrapy.Spider):
 
             with self.driver:
                 self.driver.get(investor_url)
-            time.sleep(10)
-            # try:
-            #     WebDriverWait(self.driver, 15).until(
-            #         EC.presence_of_element_located((By.CSS_SELECTOR, ".ui-table-row.ng-scope.sell")))
-            # except TimeoutException:
-            #     raise RuntimeError("Timeout Error")
+            try:
+                WebDriverWait(self.driver, 15).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".ui-table-row.ng-scope.sell")))
+            except TimeoutException:
+                raise RuntimeError("Timeout Error")
             portfolio_elements = self.driver.find_elements_by_css_selector(".ui-table-row.ng-scope.sell")
             for el in portfolio_elements:
                 ticker_data = [_.text for _ in el.find_elements_by_css_selector(".ng-binding")][:-6]
