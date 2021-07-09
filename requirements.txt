@@ -19,3 +19,4 @@ plotly
 statsmodels
 torch
 transformers
+undetected_chromedriver

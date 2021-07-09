@@ -11,6 +11,8 @@ from selenium.common.exceptions import TimeoutException
 import logging
 import os
 import sys
+import undetected_chromedriver.v2 as uc
+from tqdm import tqdm
 
 sys.path.append(
     os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))))
@@ -19,7 +21,6 @@ logger = logging.root
 
 config = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "config.json", "rb"))
 N_TOP_INVESTORS = config["etoro_top_n_investors"]
-SAVE_EVERY = config["persist_every"]
 settings = get_project_settings()
 
 
@@ -43,9 +44,8 @@ class EtoroInvestorSpider(scrapy.Spider):
     def __init__(self, name=None, **kwargs):
         super().__init__(name, **kwargs)
         self.investor_portfolio = []
-
-        import undetected_chromedriver.v2 as uc
         options = uc.ChromeOptions()
+#         options.headless = True
         options.add_argument('--no-first-run --no-sandbox --no-service-autorun --password-store=basic')
         self.driver = uc.Chrome(options=options)
 
@@ -77,10 +77,9 @@ class EtoroInvestorSpider(scrapy.Spider):
         all_investor_names = self._load_investors()
         scraped_investor_names = self._load_scraped_investors()
         investor_names = [name for name in all_investor_names if name not in scraped_investor_names]
-        print(investor_names)
         investor_urls = [f"https://www.etoro.com/people/{inv_name}/portfolio" for inv_name in investor_names]
 
-        for investor_url in investor_urls:
+        for investor_url in tqdm(investor_urls):
 
             portfolio = {}
             investor_name = investor_url.split("/")[-2]

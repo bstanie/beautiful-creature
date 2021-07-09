@@ -2,9 +2,12 @@ import json
 import os
 from datetime import datetime
 from time import sleep
+
+import pymongo
 import scrapy
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+from scrapy.utils.project import get_project_settings
 import logging
 from pathlib import Path
 
@@ -12,7 +15,7 @@ logger = logging.root
 config = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "config.json", "rb"))
 ETORO_TOP_N_INVESTORS = config["etoro_top_n_investors"]
 SLEEP_TIME = config["sleep_time"]
-
+settings = get_project_settings()
 
 class EtoroDashboardSpider(scrapy.Spider):
     timestamp = datetime.now().strftime("%d-%m-%y")
@@ -41,8 +44,18 @@ class EtoroDashboardSpider(scrapy.Spider):
         f'https://www.irk.ru/',
     )
     PAGE_COUNT = 0
-
+    
+    def drop_existing_collection(self):
+        connection = pymongo.MongoClient(
+            settings['MONGODB_SERVER'],
+            settings['MONGODB_PORT']
+        )
+        investor_collection_name = f"{settings['MONGODB_INVESTOR_COLLECTION']}_{self.timestamp}"
+        db = connection[settings['MONGODB_DB']]
+        db.drop_collection(investor_collection_name)
+    
     def start_requests(self):
+        self.drop_existing_collection()
         for url in self.start_urls:
             yield scrapy.Request(url, self.parse)
 
