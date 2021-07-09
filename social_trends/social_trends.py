@@ -2,7 +2,7 @@ import json
 import pathlib
 import time
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 from pytrends.request import TrendReq
 from tqdm import tqdm
@@ -50,9 +50,14 @@ def extract_search_data(keywords):
 
     for idx, keyword in tqdm(enumerate(tqdm(keywords))):
         try:
-            data = pytrend.get_historical_interest([keyword], year_start=2021, month_start=6,
-                                                   day_start=26, hour_start=0, year_end=2021,
-                                                   month_end=7, day_end=9, sleep=2)
+            end_timestr = datetime.today().strftime("%Y-%m-%d")
+            start_timestr = (datetime.today() - timedelta(days=100)).strftime("%Y-%m-%d")
+            timeframe = f"{start_timestr} {end_timestr}"
+            pytrend.build_payload([keyword], cat=None, timeframe=timeframe)
+            data = pytrend.interest_over_time()
+            # data = pytrend.get_historical_interest([keyword], year_start=2021, month_start=6,
+            #                                        day_start=26, hour_start=0, year_end=2021,
+            #                                        month_end=7, day_end=9, sleep=2)
             if not data.empty:
                 data = data.drop(labels=['isPartial'], axis='columns')
                 data.columns = [keyword]
