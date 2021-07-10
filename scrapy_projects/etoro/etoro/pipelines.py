@@ -15,6 +15,7 @@ from scrapy.utils.project import get_project_settings
 
 settings = get_project_settings()
 
+
 class EtoroDashboardPipeline:
     timestamp = datetime.now().strftime("%d-%m-%y")
 
@@ -23,8 +24,8 @@ class EtoroDashboardPipeline:
             settings['MONGODB_SERVER'],
             settings['MONGODB_PORT']
         )
-        investor_collection_name = f"{settings['MONGODB_INVESTOR_COLLECTION']}_{self.timestamp}"
-        portfolio_collection_name = f"{settings['MONGODB_PORTFOLIO_COLLECTION']}_{self.timestamp}"
+        investor_collection_name = f"{settings['MONGODB_INVESTOR_COLLECTION']}"
+        portfolio_collection_name = f"{settings['MONGODB_PORTFOLIO_COLLECTION']}"
         db = connection[settings['MONGODB_DB']]
         self.investor_collection = db[investor_collection_name]
         self.portfolio_collection = db[portfolio_collection_name]
@@ -34,8 +35,12 @@ class EtoroDashboardPipeline:
             for data in item:
                 if not data:
                     raise DropItem("Missing {0}!".format(data))
-                self.investor_collection.insert(dict(item))
+                item = dict(item)
+                item["timestamp"] = self.timestamp
+                self.investor_collection.insert(item)
                 return item
         elif spider.name == "etoro_portfolio":
-            self.portfolio_collection.insert(dict(item))
+            item = dict(item)
+            item["timestamp"] = self.timestamp
+            self.portfolio_collection.insert(item)
             return item

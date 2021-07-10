@@ -23,21 +23,20 @@ from project_settings import BINANCE_KEY, BINANCE_SECRET, PROJECT_ROOT
 
 # %%
 
-name_mapping = {"Cardano": "ADAUSDT", "Ripple": "XRPUSDT", "Ethereum": "ETHUSDT", "Dogecoin": "DOGEUSDT",
+NAME_MAPPING = {"Cardano": "ADAUSDT", "Ripple": "XRPUSDT", "Ethereum": "ETHUSDT", "Dogecoin": "DOGEUSDT",
                 "Polkadot": "DOTUSDT", "Litecoin": "LTCUSDT", "Solana": "SOLUSDT",
                 "VeChain": "VETUSDT", "FileCoin": "FILUSDT", "Monero": "XMRUSDT"}
 
-symbol = "DOTUSDT"
+CRYPTO_NAME = "DOTUSDT"
 
 # %%
 
 client = Client(BINANCE_KEY, BINANCE_SECRET)
-klines = client.get_historical_klines(symbol, Client.KLINE_INTERVAL_1DAY, start_str="1 Jan, 2021")
+klines = client.get_historical_klines(CRYPTO_NAME, Client.KLINE_INTERVAL_1DAY, start_str="1 Jan, 2021")
 print("History size:", len(klines))
 
 # %%
 
-create_reddit_report()
 
 # %%
 
@@ -56,7 +55,7 @@ hist_prices.head()
 
 plt.figure(figsize=(10, 7))
 sns.lineplot(x=hist_prices["time"], y=hist_prices["price"])
-plt.title(symbol)
+plt.title(CRYPTO_NAME)
 
 # %%
 
@@ -64,7 +63,7 @@ plt.title(symbol)
 def fetch_reddit_data(symbol: str):
     history_data_path = PROJECT_ROOT / "reddit_scraper" / 'reddit_crypto_stat.csv'
     df = pd.read_csv(history_data_path)
-    df["keyword"] = df["keyword"].map(name_mapping)
+    df["keyword"] = df["keyword"].map(NAME_MAPPING)
     df = df.set_index(['keyword', 'date'])
     df = df.sort_index()
     sub_df = df.loc[symbol, :].copy()
@@ -78,7 +77,7 @@ def fetch_search_data(symbol: str):
     df = pd.read_json(PROJECT_ROOT / "search_trends.json")
     df.index = pd.to_datetime(df.index, yearfirst=True)
     df[df.columns] = StandardScaler().fit_transform(df)
-    df.columns = list(map(lambda x: name_mapping[x], df.columns))
+    df.columns = list(map(lambda x: NAME_MAPPING[x], df.columns))
     sub_df = df[[symbol]]
     sub_df.columns = ["search"]
     return sub_df
@@ -86,12 +85,12 @@ def fetch_search_data(symbol: str):
 
 # %%
 
-hist_reddit = fetch_reddit_data(symbol)
+hist_reddit = fetch_reddit_data(CRYPTO_NAME)
 history_prices = hist_prices.set_index("time").loc[hist_reddit.index[0]:]
 history_prices[history_prices.columns] = StandardScaler().fit_transform(history_prices)
 history_prices.index = history_prices.index.date
 history_prices.index.name = "date"
-hist_search = fetch_search_data(symbol).loc[hist_reddit.index[0]:]
+hist_search = fetch_search_data(CRYPTO_NAME).loc[hist_reddit.index[0]:]
 
 # %%
 

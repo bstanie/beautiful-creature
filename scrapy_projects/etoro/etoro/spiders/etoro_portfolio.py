@@ -23,10 +23,10 @@ logger = logging.root
 config = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "config.json", "rb"))
 N_TOP_INVESTORS = config["etoro_top_n_investors"]
 settings = get_project_settings()
+TIMESTAMP = datetime.now().strftime("%d-%m-%y")
 
 
 class EtoroPortfolioSpider(scrapy.Spider):
-    timestamp = datetime.now().strftime("%d-%m-%y")
     name = "etoro_portfolio"
     allowed_domains = ["etoro.com"]
 
@@ -55,17 +55,17 @@ class EtoroPortfolioSpider(scrapy.Spider):
 
     def _load_scraped_investors(self):
 
-        collection_name = f"{settings['MONGODB_PORTFOLIO_COLLECTION']}_{self.timestamp}"
+        collection_name = f"{settings['MONGODB_PORTFOLIO_COLLECTION']}"
         db = self.connection[settings['MONGODB_DB']]
         collection = db[collection_name]
 
-        cursor = collection.find({})
+        cursor = collection.find({"timestamp": TIMESTAMP})
         scraped_investors = [usr["investor_name"] for usr in cursor]
         return scraped_investors
 
     def _load_investors(self):
 
-        collection_name = f"{settings['MONGODB_INVESTOR_COLLECTION']}_{self.timestamp}"
+        collection_name = f"{settings['MONGODB_INVESTOR_COLLECTION']}"
         db = self.connection[settings['MONGODB_DB']]
         collection = db[collection_name]
 
@@ -86,7 +86,6 @@ class EtoroPortfolioSpider(scrapy.Spider):
             investor_name = investor_url.split("/")[-2]
             portfolio["investor_name"] = investor_name
             portfolio["items"] = []
-            portfolio["datetime"] = datetime.now().strftime("%y-%m-%d")
 
             with self.driver:
                 self.driver.get(investor_url)

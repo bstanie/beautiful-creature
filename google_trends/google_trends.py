@@ -4,12 +4,14 @@ import time
 import random
 from datetime import datetime, timedelta
 import pandas as pd
+import pymongo
 from tqdm import tqdm
 import re
 import os
 import sys
 import logging
 
+import project_settings
 from project_settings import PROJECT_ROOT
 from pytrend import AdaptedTrendReq
 
@@ -23,8 +25,9 @@ OUTPUT_FILE_PATH = os.path.join(PROJECT_ROOT, f'search_trends.json')
 with open(pathlib.Path.cwd().parent / "config.json", "r") as f:
     KEYWORDS = json.load(f)["cryptos"]
 
-config = json.load(open(pathlib.Path(__file__).parent.parent / "config.json", "rb"))
+config = json.load(open(pathlib.Path(PROJECT_ROOT) / "config.json", "rb"))
 SAVE_EVERY = config["save_every"]
+TIMESTAMP = datetime.now().strftime("%d-%m-%y")
 
 
 def clean_name(keyword):
@@ -50,7 +53,7 @@ def extract_search_data(keywords):
     for idx, keyword in tqdm(enumerate(tqdm(keywords))):
         try:
             end_timestr = datetime.today().strftime("%Y-%m-%d")
-            start_timestr = (datetime.today() - timedelta(days=100)).strftime("%Y-%m-%d")
+            start_timestr = (datetime.today() - timedelta(days=180)).strftime("%Y-%m-%d")
             timeframe = f"{start_timestr} {end_timestr}"
             pytrend.build_payload([keyword], cat=None, timeframe=timeframe)
             data = pytrend.interest_over_time()
@@ -68,8 +71,19 @@ def extract_search_data(keywords):
 
     result = pd.concat(dataset, axis=1)
     logger.info(f"Google trends - scraped {len(keywords)} companies")
-    with open(OUTPUT_FILE_PATH, 'w') as f:
-        result.to_json(f)
+    save_to_db(result)
+
+
+def save_to_db(df):
+    connection = pymongo.MongoClient(
+        project_settings.MONGODB_SERVER,
+        project_settings.MONGODB_PORT)
+    google_trends_collection_name = f"{project_settings.MONGODB_GOOGLE_TRENDS_COLLECTION}_by_day"
+    db = connection[project_settings.MONGODB_DB_NAME]
+    db.drop_collection(google_trends_collection_name)
+    google_trends_collection = db[google_trends_collection_name]
+    for i, row in df.reset_index().iterrows():
+        google_trends_collection.insert_one(dict(row))
 
 
 if __name__ == '__main__':

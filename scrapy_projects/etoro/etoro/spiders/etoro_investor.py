@@ -18,10 +18,10 @@ config = json.load(open(Path(__file__).parent.parent.parent.parent.parent / "con
 ETORO_TOP_N_INVESTORS = config["etoro_top_n_investors"]
 SLEEP_TIME = config["sleep_time"]
 settings = get_project_settings()
-
+TIMESTAMP = datetime.now().strftime("%d-%m-%y")
 
 class EtoroInvestorSpider(scrapy.Spider):
-    timestamp = datetime.now().strftime("%d-%m-%y")
+
     name = "etoro_investor"
     allowed_domains = ["etoro.com"]
     params = {"hasavatar": "true",
@@ -53,9 +53,10 @@ class EtoroInvestorSpider(scrapy.Spider):
             settings['MONGODB_SERVER'],
             settings['MONGODB_PORT']
         )
-        investor_collection_name = f"{settings['MONGODB_INVESTOR_COLLECTION']}_{self.timestamp}"
+        investor_collection_name = f"{settings['MONGODB_INVESTOR_COLLECTION']}"
         db = connection[settings['MONGODB_DB']]
-        db.drop_collection(investor_collection_name)
+        collection = db[investor_collection_name]
+        collection.delete_many({"timestamp": TIMESTAMP})
 
     def start_requests(self):
         self.drop_existing_collection()
