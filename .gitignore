@@ -6,3 +6,5 @@ notebooks/.ipynb_checkpoints
 **/*.log
 *.txt
 !requirements.txt
+**/__pycache__
+*.pyc
