@@ -28,6 +28,7 @@ MONGODB_PORT = 27017
 MONGODB_DB_NAME = "beautiful_creature"
 MONGODB_GOOGLE_TRENDS_COLLECTION = "google_trends"
 MONGODB_REDDIT_COLLECTION = "reddit_trends"
+MONGODB_REDDIT_STAT_COLLECTION = "reddit_stat"
 
 # Logging settings
 

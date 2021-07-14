@@ -41,18 +41,18 @@ class AdaptedTrendReq(TrendReq):
                     multiplier = week_df[keywords].iloc[0] / df[keywords].iloc[-1]
                     df[keywords] *= multiplier
                     df = df.append(week_df.iloc[1:])
-                else:
+                elif df.shape[0] == 0:
                     df = df.append(week_df)
             except Exception as e:
+                print("\n")
                 print(e)
-                pass
+                print(tf)
+                break
 
             start_date += delta
             date_iterator += delta
 
             if (date_iterator > end_date):
-                # Run for 7 more days to get remaining data that would have been truncated if we stopped now
-                # This is needed because google requires 7 days yet we may end up with a week result less than a full week
                 start_date_str = start_date.strftime('%Y-%m-%dT%H')
                 date_iterator_str = date_iterator.strftime('%Y-%m-%dT%H')
 

@@ -1,10 +1,12 @@
 import json
+import random
 import time
 from datetime import datetime
 from pathlib import Path
 import pymongo
 import scrapy
 from scrapy.utils.project import get_project_settings
+from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -44,56 +46,67 @@ class EtoroPortfolioSpider(scrapy.Spider):
 
     def __init__(self, name=None, **kwargs):
         super().__init__(name, **kwargs)
+
+        logging.getLogger("urllib3").setLevel(logging.INFO)
+        logging.getLogger("selenium").setLevel(logging.INFO)
+        logging.getLogger("scrapy").setLevel(logging.INFO)
+
         self.investor_portfolio = []
         options = uc.ChromeOptions()
-        # options.headless = True
-        options.add_argument('--no-first-run --no-sandbox --no-service-autorun --password-store=basic')
+
+        # options = webdriver.ChromeOptions()
+        #
+        # options.add_argument('--no-first-run --no-sandbox --no-service-autorun --password-store=basic')
+        options.headless = True
         self.driver = uc.Chrome(options=options)
 
     def start_requests(self):
         yield scrapy.Request("https://www.irk.ru", self.parse)
 
-    def _load_scraped_investors(self):
+    def _load_this_day_portfolios(self):
 
         collection_name = f"{settings['MONGODB_PORTFOLIO_COLLECTION']}"
         db = self.connection[settings['MONGODB_DB']]
         collection = db[collection_name]
 
         cursor = collection.find({"timestamp": TIMESTAMP})
-        scraped_investors = [usr["investor_name"] for usr in cursor]
-        return scraped_investors
+        this_day_portfolios = [usr["investor_name"] for usr in cursor]
+        return this_day_portfolios
 
-    def _load_investors(self):
+    def _load_this_day_investors(self):
 
         collection_name = f"{settings['MONGODB_INVESTOR_COLLECTION']}"
         db = self.connection[settings['MONGODB_DB']]
         collection = db[collection_name]
 
-        cursor = collection.find({})
+        cursor = collection.find({"timestamp": TIMESTAMP})
         all_investors = [usr["UserName"] for usr in cursor]
         return all_investors
 
     def parse(self, response, **kwargs):
 
-        all_investor_names = self._load_investors()
-        scraped_investor_names = self._load_scraped_investors()
-        investor_names = [name for name in all_investor_names if name not in scraped_investor_names]
-        investor_urls = [f"https://www.etoro.com/people/{inv_name}/portfolio" for inv_name in investor_names]
+        this_day_investors = self._load_this_day_investors()
+        this_day_portfolios = self._load_this_day_portfolios()
+        investor_names_to_scrape = [name for name in this_day_investors if name not in this_day_portfolios]
+        investor_urls_to_scrape = [f"https://www.etoro.com/people/{inv_name}/portfolio" for inv_name in
+                                   investor_names_to_scrape]
 
-        for investor_url in tqdm(investor_urls):
+        for investor_url in tqdm(investor_urls_to_scrape):
 
             portfolio = {}
             investor_name = investor_url.split("/")[-2]
             portfolio["investor_name"] = investor_name
             portfolio["items"] = []
-
-            with self.driver:
-                self.driver.get(investor_url)
-            try:
-                WebDriverWait(self.driver, 15).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, ".ui-table-row.ng-scope.sell")))
-            except TimeoutException:
-                raise RuntimeError("Timeout Error")
+            # time.sleep(5)
+            self.driver.get(investor_url)
+            # time.sleep(5)
+            # self.driver.get(investor_url)
+            # try:
+            #     WebDriverWait(self.driver, 15).until(
+            #         EC.presence_of_element_located((By.CSS_SELECTOR, ".ui-table-row.ng-scope.sell")))
+            # except TimeoutException:
+            #     raise RuntimeError("Timeout Error")
+            time.sleep(random.randint(1, 5))
             portfolio_elements = self.driver.find_elements_by_css_selector(".ui-table-row.ng-scope.sell")
             for el in portfolio_elements:
                 ticker_data = [_.text for _ in el.find_elements_by_css_selector(".ng-binding")][:-6]
