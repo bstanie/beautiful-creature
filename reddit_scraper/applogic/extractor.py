@@ -4,7 +4,7 @@ import datetime
 import tqdm as tqdm
 
 import project_settings
-from reddit_scraper.conf import SUBREDDITS, BASE_URLS, SCRAPE_SUBMISSION_COMMENTS
+from reddit_scraper.conf import BASE_URLS, SCRAPE_SUBMISSION_COMMENTS
 from reddit_scraper.applogic.scraper import scrape_by_number_of_posts, scrape_from_date_to_date, extract_information
 from s_utils.db import DataBaseConnector
 from reddit_scraper.utils import get_unix_timestamp, get_datetime_from_unix, get_parent_post_ids, \
@@ -15,7 +15,7 @@ logger.setLevel(logging.INFO)
 db_connector = DataBaseConnector()
 
 
-def run_extractor(keywords, start_timestamp, end_timestamp, frequency, overwrite):
+def run_extractor(keywords, subreddits, start_timestamp, end_timestamp, frequency, overwrite):
     if frequency == "hour":
         look_back = (end_timestamp - start_timestamp).days * 24
         time_delta = datetime.timedelta(hours=1)
@@ -28,7 +28,7 @@ def run_extractor(keywords, start_timestamp, end_timestamp, frequency, overwrite
     if start_timestamp:
         logger.info(
             f"Start scraping all the posts since {start_timestamp} till {end_timestamp} "
-            f"in subreddits {SUBREDDITS} with keywords: {keywords}")
+            f"in subreddits {subreddits} with keywords: {keywords}")
 
     log_start_time = time.time()
     current_timestamp = end_timestamp
@@ -36,19 +36,19 @@ def run_extractor(keywords, start_timestamp, end_timestamp, frequency, overwrite
     for i in tqdm.tqdm(range(look_back)):
         previous_timestamp = current_timestamp - time_delta
         logger.debug(f"\nScraping from {previous_timestamp} to {current_timestamp}")
-        _run_extraction_between_timestamps(keywords, db_connector, previous_timestamp, current_timestamp, overwrite)
+        _run_extraction_between_timestamps(keywords, subreddits, db_connector, previous_timestamp, current_timestamp, overwrite)
         current_timestamp = previous_timestamp
 
     log_end_time = time.time()
     logger.info(f"Extraction finished. Time spent:  {log_end_time - log_start_time} seconds")
 
 
-def _run_extraction_between_timestamps(keywords, db_connector, previous_timestamp, current_timestamp, overwrite=False):
+def _run_extraction_between_timestamps(keywords, subreddits, db_connector, previous_timestamp, current_timestamp, overwrite=False):
     unix_start = int(get_unix_timestamp(previous_timestamp))
     unix_end = int(get_unix_timestamp(current_timestamp))
     time_window = {"$gte": previous_timestamp, "$lt": current_timestamp}
 
-    for subreddit in SUBREDDITS:
+    for subreddit in subreddits:
         for keyword in keywords:
 
             if overwrite:

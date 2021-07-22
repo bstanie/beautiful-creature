@@ -1,7 +1,13 @@
 {
-  "sleep_time": 5,
   "etoro_top_n_investors": 8,
-  "save_every": 5,
+  "subreddits": [
+    "CryptoMarkets",
+    "CryptoCurrency",
+    "CryptoCurrencies",
+    "Bitcoin",
+    "ethereum",
+    "CryptoMoonShots"
+  ],
   "cryptos": [
     "Ripple",
     "Cardano",
@@ -25,5 +31,7 @@
     "gamestop",
     "tesla",
     "intel"
-  ]
+  ],
+  "save_every": 5,
+  "sleep_time": 5
 }

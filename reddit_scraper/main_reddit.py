@@ -6,12 +6,14 @@ from reddit_scraper.applogic.extractor import run_extractor
 from s_utils.datetime_utils import get_datetime_borders_from_args
 
 with open(pathlib.Path.cwd().parent / "config.json", "r") as f:
-    KEYWORDS = json.load(f)["cryptos"]
+    config = json.load(f)
+    KEYWORDS = config["cryptos"]
+    SUBREDDITS = config["subreddits"]
 
 
 def start(args):
     start_timestamp, end_timestamp = get_datetime_borders_from_args(args, latest_utc_hour=True)
-    run_extractor(KEYWORDS, start_timestamp, end_timestamp, args.frequency, args.overwrite)
+    run_extractor(KEYWORDS, SUBREDDITS, start_timestamp, end_timestamp, args.frequency, args.overwrite)
 
 
 if __name__ == '__main__':

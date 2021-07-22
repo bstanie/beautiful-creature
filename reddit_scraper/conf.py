@@ -1,8 +1,5 @@
-# --------------------CHANGE HERE------------------------------------------
 
-SUBREDDITS = ["all"]
 
-# -----------------------------------------------------------------------------------
 
 BASE_URLS = {"posts": 'https://api.pushshift.io/reddit/submission/search/?size=1000',
              "comments": 'https://api.pushshift.io/reddit/comment/search/?size=1000'}
