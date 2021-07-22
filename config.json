@@ -1,6 +1,6 @@
 {
   "sleep_time": 5,
-  "etoro_top_n_investors": 10,
+  "etoro_top_n_investors": 8,
   "save_every": 5,
   "cryptos": [
     "Ripple",
@@ -12,6 +12,18 @@
     "Solana",
     "VeChain",
     "FileCoin",
-    "Monero"
+    "Monero",
+    "Theta Token",
+    "Bitcoin cash",
+    "Polygon",
+    "Stellar Lumens",
+    "TRON",
+    "Eos",
+    "Aave"
+  ],
+  "stocks": [
+    "gamestop",
+    "tesla",
+    "intel"
   ]
 }

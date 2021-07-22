@@ -23,6 +23,10 @@ class DataBaseConnector:
             collection = self.get_collection(collection_name)
             collection.insert_many(item)
 
+    def count_documents(self, collection_name, query):
+        collection = self.get_collection(collection_name)
+        return collection.count_documents(query)
+
     def save_items(self, collection_name, items):
         if len(items) > 0:
             collection = self.get_collection(collection_name)
@@ -30,7 +34,8 @@ class DataBaseConnector:
 
     def delete_items(self, collection_name, query):
         collection = self.get_collection(collection_name)
-        collection.delete_many(query)
+        delete_result = collection.delete_many(query)
+        return delete_result
 
     def get_items(self, collection_name, query):
         collection = self.get_collection(collection_name)

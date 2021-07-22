@@ -55,7 +55,8 @@ class AdaptedTrendReq(TrendReq):
             if (date_iterator > end_date):
                 start_date_str = start_date.strftime('%Y-%m-%dT%H')
                 date_iterator_str = date_iterator.strftime('%Y-%m-%dT%H')
-
+                if start_date > datetime.utcnow():
+                    break
                 tf = start_date_str + ' ' + date_iterator_str
 
                 try:
@@ -68,8 +69,10 @@ class AdaptedTrendReq(TrendReq):
                     else:
                         df = df.append(week_df)
                 except Exception as e:
+                    print("\n")
                     print(e)
-                    pass
+                    print(tf)
+                    break
                 break
 
             # just in case you are rate-limited by Google. Recommended is 60 if you are.

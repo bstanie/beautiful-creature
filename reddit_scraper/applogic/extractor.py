@@ -11,42 +11,58 @@ from reddit_scraper.utils import get_unix_timestamp, get_datetime_from_unix, get
     make_parent_post_filter_chunks
 
 logger = logging.root
+logger.setLevel(logging.INFO)
+db_connector = DataBaseConnector()
 
 
-def run_extractor(keywords, start_timestamp, end_timestamp):
-    db_connector = DataBaseConnector()
-
-    look_back_timedelta = end_timestamp - start_timestamp
-    day_delta = datetime.timedelta(1)
+def run_extractor(keywords, start_timestamp, end_timestamp, frequency, overwrite):
+    if frequency == "hour":
+        look_back = (end_timestamp - start_timestamp).days * 24
+        time_delta = datetime.timedelta(hours=1)
+    elif frequency == "day":
+        look_back = (end_timestamp - start_timestamp).days
+        time_delta = datetime.timedelta(days=1)
+    else:
+        raise ValueError("Frequency should be hour or day")
 
     if start_timestamp:
         logger.info(
             f"Start scraping all the posts since {start_timestamp} till {end_timestamp} "
-            f"in the following subreddits {SUBREDDITS} with the following keywords: {keywords}")
+            f"in subreddits {SUBREDDITS} with keywords: {keywords}")
 
     log_start_time = time.time()
-    this_day_timestamp = end_timestamp
+    current_timestamp = end_timestamp
 
-    for i in range(look_back_timedelta.days):
-        previous_day_timestamp = this_day_timestamp - day_delta
-        logger.info(f"\nScraping from {previous_day_timestamp} to {this_day_timestamp}")
-
-        db_connector.delete_items(project_settings.MONGODB_REDDIT_COLLECTION,
-                                  {"timestamp": {"$gte": previous_day_timestamp, "$lt": this_day_timestamp}})
-
-        unix_start = int(get_unix_timestamp(previous_day_timestamp))
-        unix_end = int(get_unix_timestamp(this_day_timestamp))
-        _run_extraction_between_timestamps(keywords, db_connector, unix_start, unix_end)
-
-        this_day_timestamp = previous_day_timestamp
+    for i in tqdm.tqdm(range(look_back)):
+        previous_timestamp = current_timestamp - time_delta
+        logger.debug(f"\nScraping from {previous_timestamp} to {current_timestamp}")
+        _run_extraction_between_timestamps(keywords, db_connector, previous_timestamp, current_timestamp, overwrite)
+        current_timestamp = previous_timestamp
 
     log_end_time = time.time()
     logger.info(f"Extraction finished. Time spent:  {log_end_time - log_start_time} seconds")
 
 
-def _run_extraction_between_timestamps(keywords, db_connector, unix_start, unix_end):
+def _run_extraction_between_timestamps(keywords, db_connector, previous_timestamp, current_timestamp, overwrite=False):
+    unix_start = int(get_unix_timestamp(previous_timestamp))
+    unix_end = int(get_unix_timestamp(current_timestamp))
+    time_window = {"$gte": previous_timestamp, "$lt": current_timestamp}
+
     for subreddit in SUBREDDITS:
         for keyword in keywords:
+
+            if overwrite:
+                db_connector.delete_items(project_settings.MONGODB_REDDIT_COLLECTION, {"timestamp": time_window,
+                                                                                       "keyword": keyword})
+
+            num_docs_for_time_window = db_connector.count_documents(
+                project_settings.MONGODB_REDDIT_COLLECTION,
+                {"timestamp": time_window,
+                 "keyword": keyword})
+
+            if num_docs_for_time_window > 0:
+                continue
+
             logger.debug(f"Scraping keyword '{keyword}'")
             item_type = "posts"
             url = BASE_URLS["posts"]
@@ -61,7 +77,7 @@ def _run_extraction_between_timestamps(keywords, db_connector, unix_start, unix_
                 item_type = "comments"
                 parent_post_ids = get_parent_post_ids(posts, keyword)
                 parent_post_chunks = make_parent_post_filter_chunks(parent_post_ids)
-                for chu in tqdm.tqdm(parent_post_chunks):
+                for chu in parent_post_chunks:
                     url = BASE_URLS[item_type] + f'&link_id={chu}'
                     comments = _extract_by_keyword_and_subreddit(url, item_type, subreddit, keyword, unix_start,
                                                                  unix_end,
@@ -70,7 +86,7 @@ def _run_extraction_between_timestamps(keywords, db_connector, unix_start, unix_
                         db_connector.save_items(project_settings.MONGODB_REDDIT_COLLECTION, comments)
 
                     total_comments += len(comments)
-                logger.info(
+                logger.debug(
                     f"Extracted {total_comments} '{item_type}' from subreddit "
                     f"'{subreddit}' with a keyword '{keyword}'")
 
@@ -90,7 +106,7 @@ def _extract_by_keyword_and_subreddit(url, item_type, subreddit, keyword, start_
                                          starttime_unix=start_unix_timestamp,
                                          endtime_unix=end_unix_timestamp)
     if log:
-        logger.info(
+        logger.debug(
             f"\nExtracted {len(posts)} '{item_type}' from subreddit '{subreddit}' with a keyword '{keyword}'")
 
     serialized_posts = extract_information(subreddit, item_type, keyword, posts)

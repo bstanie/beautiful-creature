@@ -1,21 +1,15 @@
-import json
-import os
-import pathlib
 from collections import defaultdict, Counter
 from datetime import datetime, timedelta
+import numpy as np
 import pandas as pd
-import pymongo
 from langdetect import detect
 from tqdm import tqdm
-from transformers import pipeline
 
 import project_settings
 from s_utils.db import DataBaseConnector
 
 MESSAGE_MAX_LEN = 1000
 
-
-# sentiment_analyzer = pipeline('sentiment-analysis')
 
 def create_reddit_report(frequency, overwrite=False):
     dfs = []
@@ -41,24 +35,20 @@ def create_reddit_report(frequency, overwrite=False):
             raise ValueError
         current_dt += step
 
-    try:
-        reddit_stat = db_connector.get_items(project_settings.MONGODB_REDDIT_STAT_COLLECTION, {})
-        report_end_dt = reddit_stat.sort("timestamp", -1)[0][
-            "timestamp"]
-        timestamps_iterator = [t for t in timestamps_iterator if t >= report_end_dt]
-        print(f"Found reddit stat until {report_end_dt}. Creating stat after that time")
-    except IndexError:
-        print("No reddit stat found, creating stat from scratch")
-
     for i in tqdm(range(len(timestamps_iterator) - 1)):
 
         result = defaultdict(lambda: defaultdict(int))
         sentiment_result = defaultdict(lambda: defaultdict(list))
 
-        day_timestamp = timestamps_iterator[i]
+        current_timestamp = timestamps_iterator[i]
+        time_window = {"timestamp": {"$gte": timestamps_iterator[i],
+                                     "$lt": timestamps_iterator[i + 1]}}
+        existing_report_in_time_window = list(
+            db_connector.get_items(project_settings.MONGODB_REDDIT_STAT_COLLECTION, time_window))
+        if len(existing_report_in_time_window) > 0:
+            continue
         current_date_reddit_posts = db_connector.get_items(project_settings.MONGODB_REDDIT_COLLECTION,
-                                                           {"timestamp": {"$gte": timestamps_iterator[i],
-                                                                          "$lt": timestamps_iterator[i + 1]}})
+                                                           time_window)
         for reddit_post in current_date_reddit_posts:
             keyword = reddit_post["keyword"]
             comments = reddit_post["num_comments"]
@@ -99,15 +89,19 @@ def create_reddit_report(frequency, overwrite=False):
                 result[keyword][sentiment_type] = sum(scores)
 
         df = pd.DataFrame(result).T
-        df["timestamp"] = day_timestamp
+        df["timestamp"] = current_timestamp
         dfs.append(df)
 
-    stat_df = pd.concat(dfs).reset_index().rename(columns={"index": "keyword"}).sort_values(["keyword", "timestamp"])
-    stat_df = stat_df[
-        ["timestamp", "keyword", "num_keyword_posts", "num_comments", "num_keyword_comments", "mood_buy",
-         "mood_sell"]]
+    stat_df = pd.concat(dfs)
+    if not stat_df.empty:
+        if "num_keyword_comments" not in stat_df.columns:
+            stat_df["num_keyword_comments"] = np.NAN
+        stat_df = stat_df.reset_index().rename(columns={"index": "keyword"}).sort_values(["keyword", "timestamp"])
+        stat_df = stat_df[
+            ["timestamp", "keyword", "num_keyword_posts", "num_comments", "num_keyword_comments", "mood_buy",
+             "mood_sell"]]
 
-    db_connector.save_items(project_settings.MONGODB_REDDIT_STAT_COLLECTION, stat_df.to_dict("records"))
+        db_connector.save_items(project_settings.MONGODB_REDDIT_STAT_COLLECTION, stat_df.to_dict("records"))
 
 
 if __name__ == "__main__":
