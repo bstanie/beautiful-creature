@@ -1,5 +1,5 @@
 {
-  "etoro_top_n_investors": 8,
+  "etoro_top_n_investors": 30,
   "subreddits": [
     "CryptoMarkets",
     "CryptoCurrency",
@@ -8,7 +8,7 @@
     "ethereum",
     "CryptoMoonShots"
   ],
-  "cryptos": [
+  "crypto": [
     "Ripple",
     "Cardano",
     "Ethereum",
@@ -27,10 +27,7 @@
     "Eos",
     "Aave"
   ],
-  "stocks": [
-    "gamestop",
-    "tesla",
-    "intel"
+  "stock": [
   ],
   "save_every": 5,
   "sleep_time": 5

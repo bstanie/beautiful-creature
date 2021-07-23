@@ -48,47 +48,50 @@ def _run_extraction_between_timestamps(keywords, subreddits, db_connector, previ
     unix_end = int(get_unix_timestamp(current_timestamp))
     time_window = {"$gte": previous_timestamp, "$lt": current_timestamp}
 
-    for subreddit in subreddits:
-        for keyword in keywords:
+    if len(subreddits) > 1:
+        subreddit = ','.join(subreddits)
+    else:
+        subreddit = subreddits[0]
+    for keyword in keywords:
 
-            if overwrite:
-                db_connector.delete_items(project_settings.MONGODB_REDDIT_COLLECTION, {"timestamp": time_window,
-                                                                                       "keyword": keyword})
+        if overwrite:
+            db_connector.delete_items(project_settings.MONGODB_REDDIT_COLLECTION, {"timestamp": time_window,
+                                                                                   "keyword": keyword})
 
-            num_docs_for_time_window = db_connector.count_documents(
-                project_settings.MONGODB_REDDIT_COLLECTION,
-                {"timestamp": time_window,
-                 "keyword": keyword})
+        num_docs_for_time_window = db_connector.count_documents(
+            project_settings.MONGODB_REDDIT_COLLECTION,
+            {"timestamp": time_window,
+             "keyword": keyword})
 
-            if num_docs_for_time_window > 0:
-                continue
+        if num_docs_for_time_window > 0:
+            continue
 
-            logger.debug(f"Scraping keyword '{keyword}'")
-            item_type = "posts"
-            url = BASE_URLS["posts"]
-            posts = _extract_by_keyword_and_subreddit(url, item_type, subreddit, keyword, unix_start, unix_end,
-                                                      log=True)
+        logger.debug(f"Scraping keyword '{keyword}'")
+        item_type = "posts"
+        url = BASE_URLS["posts"]
+        posts = _extract_by_keyword_and_subreddit(url, item_type, subreddit, keyword, unix_start, unix_end,
+                                                  log=True)
 
-            db_connector.save_items(project_settings.MONGODB_REDDIT_COLLECTION, posts)
+        db_connector.save_items(project_settings.MONGODB_REDDIT_COLLECTION, posts)
 
-            if SCRAPE_SUBMISSION_COMMENTS is True:
-                total_comments = 0
-                logger.debug("Scraping comments for posts")
-                item_type = "comments"
-                parent_post_ids = get_parent_post_ids(posts, keyword)
-                parent_post_chunks = make_parent_post_filter_chunks(parent_post_ids)
-                for chu in parent_post_chunks:
-                    url = BASE_URLS[item_type] + f'&link_id={chu}'
-                    comments = _extract_by_keyword_and_subreddit(url, item_type, subreddit, keyword, unix_start,
-                                                                 unix_end,
-                                                                 log=False)
-                    if len(comments) > 0:
-                        db_connector.save_items(project_settings.MONGODB_REDDIT_COLLECTION, comments)
+        if SCRAPE_SUBMISSION_COMMENTS is True:
+            total_comments = 0
+            logger.debug("Scraping comments for posts")
+            item_type = "comments"
+            parent_post_ids = get_parent_post_ids(posts, keyword)
+            parent_post_chunks = make_parent_post_filter_chunks(parent_post_ids)
+            for chu in parent_post_chunks:
+                url = BASE_URLS[item_type] + f'&link_id={chu}'
+                comments = _extract_by_keyword_and_subreddit(url, item_type, subreddit, keyword, unix_start,
+                                                             unix_end,
+                                                             log=False)
+                if len(comments) > 0:
+                    db_connector.save_items(project_settings.MONGODB_REDDIT_COLLECTION, comments)
 
-                    total_comments += len(comments)
-                logger.debug(
-                    f"Extracted {total_comments} '{item_type}' from subreddit "
-                    f"'{subreddit}' with a keyword '{keyword}'")
+                total_comments += len(comments)
+            logger.debug(
+                f"Extracted {total_comments} '{item_type}' from subreddit "
+                f"'{subreddit}' with a keyword '{keyword}'")
 
 
 def _extract_by_keyword_and_subreddit(url, item_type, subreddit, keyword, start_unix_timestamp, end_unix_timestamp,

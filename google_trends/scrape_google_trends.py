@@ -24,36 +24,21 @@ sys.path.append(
     os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))))
 
 with open(pathlib.Path.cwd().parent / "config.json", "r") as f:
-    KEYWORDS = json.load(f)["cryptos"]
+    CONFIGURATION = json.load(f)
 
-config = json.load(open(pathlib.Path(PROJECT_ROOT) / "config.json", "rb"))
-SAVE_EVERY = config["save_every"]
-
-
-# def clean_name(keyword):
-#     name = keyword.replace('Common Stock', "").replace("Ordinary", ""). \
-#         replace("Inc.", "").replace("Shares", "").replace("Class A", ""). \
-#         replace("Corporation", "").replace("Corp.", "").replace("Depositary", "").replace("Series A", ""). \
-#         replace("Series B", "").replace("Holdings", "").replace("Ltd.", "").replace("Class B", ""). \
-#         replace("Class C", "").replace("Holding", "").replace("Limited", "").replace("Incorporated", ""). \
-#         replace("Inc", "").replace("Plc", "").replace("plc", "").replace("p.l.c.", "").replace("ADS", ""). \
-#         replace("ADR", "").replace("& Co.", "").replace("Group", ""). \
-#         replace("Capital Stock", "").replace("Stock", "").replace("PLC", "").replace(".com", "").replace(
-#         'American   each representing eight  share', "").replace("Wholesale", "").replace("US", "")
-#     name = re.sub(r"\(.*?\)", "", name)
-#     name = re.sub(r"\s{2,}", " ", name).strip()
-#     return name
+SAVE_EVERY = CONFIGURATION["save_every"]
 
 
 class GoogleTrendsExtractor:
 
-    def __init__(self):
+    def __init__(self, keyword_type: str):
         self.db_connector = DataBaseConnector()
         self.pytrend = AdaptedTrendReq(hl='en-US', tz=0, timeout=(10, 25))
+        self.keyword_type = keyword_type
 
-    def extract_search_data(self, keywords: List[str], kind: str, start_timestamp, end_timestamp,
-                            overwrite=False):
+    def extract_search_data(self, kind: str, start_timestamp: datetime, end_timestamp: datetime, overwrite: bool):
 
+        keywords = CONFIGURATION[self.keyword_type]
         logger.info(f"Scraping google trends data for {len(keywords)} keywords "
                     f"from {start_timestamp} to {end_timestamp}")
 
@@ -62,11 +47,11 @@ class GoogleTrendsExtractor:
 
         logger.info(f"Google trends - scraped {len(keywords)} keywords")
 
-    def _extract(self, keyword, start_timestamp, end_timestamp, kind, overwrite):
+    def _extract(self, keyword, start_timestamp: datetime, end_timestamp: datetime, kind: str, overwrite: bool):
 
         if overwrite:
             delete_result = self.db_connector.delete_items(project_settings.MONGODB_GOOGLE_TRENDS_COLLECTION_HOUR,
-                                           {"keyword": keyword})
+                                                           {"keyword": keyword})
             logger.info(f"Deleted {delete_result.deleted_count} items for keyword {keyword}")
 
         existing_data_len = self.db_connector.count_documents(project_settings.MONGODB_GOOGLE_TRENDS_COLLECTION_HOUR,
@@ -116,6 +101,7 @@ class GoogleTrendsExtractor:
             raise KeyError
         keyword = new_data.columns[0]
         new_data["keyword"] = keyword
+        new_data["keyword_type"] = self.keyword_type
         new_data = new_data.reset_index()
         new_data = new_data.rename(columns={keyword: "value", "date": "timestamp"})
         if existing_data is not None:
@@ -130,13 +116,16 @@ class GoogleTrendsExtractor:
 
 
 def start(args):
-    google_trends_extractor = GoogleTrendsExtractor()
     start_timestamp, end_timestamp = get_datetime_borders_from_args(args, latest_utc_hour=True)
     frequency = args.frequency
     if frequency not in ["hour", "day"]:
         raise RuntimeError("Frequency should be hour or day")
-    google_trends_extractor.extract_search_data(KEYWORDS, frequency, start_timestamp,
-                                                end_timestamp, args.delete)
+
+    keyword_types = ["crypto", "stock"]
+    for keyword_type in keyword_types:
+        google_trends_extractor = GoogleTrendsExtractor(keyword_type)
+        google_trends_extractor.extract_search_data(frequency, start_timestamp,
+                                                    end_timestamp, args.delete)
 
 
 if __name__ == '__main__':

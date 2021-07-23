@@ -9,7 +9,7 @@ import project_settings
 from s_utils.db import DataBaseConnector
 
 MESSAGE_MAX_LEN = 1000
-
+SAVE_EACH = 50
 
 def create_reddit_report(frequency, overwrite=False):
     dfs = []
@@ -51,10 +51,10 @@ def create_reddit_report(frequency, overwrite=False):
                                                            time_window)
         for reddit_post in current_date_reddit_posts:
             keyword = reddit_post["keyword"]
-            comments = reddit_post["num_comments"]
+            num_comments = reddit_post["num_comments"]
             if reddit_post["type"] == "posts":
                 result[keyword]["num_keyword_posts"] += 1
-                result[keyword]["num_comments"] += comments
+                result[keyword]["num_comments"] += num_comments
             elif reddit_post["type"] == "comments":
                 result[keyword]["num_keyword_comments"] += 1
 
@@ -78,8 +78,8 @@ def create_reddit_report(frequency, overwrite=False):
                     if lang == "en":
                         text_splitted = text.lower().split()
                         counts = Counter(text_splitted)
-                        sentiment_result[keyword]["mood_buy"].append(counts["buy"])
-                        sentiment_result[keyword]["mood_sell"].append(counts["sell"])
+                        sentiment_result[keyword]["buy"].append(counts["buy"])
+                        sentiment_result[keyword]["sell"].append(counts["sell"])
                 except Exception as e:
                     print(e)
 
@@ -92,16 +92,18 @@ def create_reddit_report(frequency, overwrite=False):
         df["timestamp"] = current_timestamp
         dfs.append(df)
 
-    stat_df = pd.concat(dfs)
-    if not stat_df.empty:
-        if "num_keyword_comments" not in stat_df.columns:
-            stat_df["num_keyword_comments"] = np.NAN
-        stat_df = stat_df.reset_index().rename(columns={"index": "keyword"}).sort_values(["keyword", "timestamp"])
-        stat_df = stat_df[
-            ["timestamp", "keyword", "num_keyword_posts", "num_comments", "num_keyword_comments", "mood_buy",
-             "mood_sell"]]
+        if i % SAVE_EACH == 0:
+            stat_df = pd.concat(dfs)
+            if not stat_df.empty:
+                if "num_keyword_comments" not in stat_df.columns:
+                    stat_df["num_keyword_comments"] = np.NAN
+                stat_df = stat_df.reset_index().rename(columns={"index": "keyword"}).sort_values(["keyword", "timestamp"])
+                stat_df = stat_df[
+                    ["timestamp", "keyword", "num_keyword_posts", "num_comments", "num_keyword_comments", "buy",
+                     "sell"]]
 
-        db_connector.save_items(project_settings.MONGODB_REDDIT_STAT_COLLECTION, stat_df.to_dict("records"))
+                db_connector.save_items(project_settings.MONGODB_REDDIT_STAT_COLLECTION, stat_df.to_dict("records"))
+            dfs = []
 
 
 if __name__ == "__main__":

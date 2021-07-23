@@ -7,7 +7,7 @@ from s_utils.datetime_utils import get_datetime_borders_from_args
 
 with open(pathlib.Path.cwd().parent / "config.json", "r") as f:
     config = json.load(f)
-    KEYWORDS = config["cryptos"]
+    KEYWORDS = config["crypto"]
     SUBREDDITS = config["subreddits"]
 
 
