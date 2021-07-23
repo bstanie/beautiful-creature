@@ -130,7 +130,7 @@ def start(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--start_date", help="Scrape from date %y-%m-%d", required=False, default="21-01-01")
+    parser.add_argument("-s", "--start_date", help="Scrape from date %y-%m-%d", required=False, default="21-04-01")
     parser.add_argument("-e", "--end_date", help="Scrape to date %y-%m-%d", required=False)
     parser.add_argument("-f", "--frequency", help="Scrape with frequency (day, hour)", required=False, default="hour")
     parser.add_argument("-d", "--delete", help="Delete previous results for given keywords", required=False,
